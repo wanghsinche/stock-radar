@@ -6,3 +6,4 @@ logs/
 .env
 config_local.yaml
 reports/
+data/

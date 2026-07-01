@@ -114,7 +114,9 @@ def qualify_at_date(close, symbols, idx):
 
 def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
                  top_n=20, buy_top=10, initial_cash_per_stock=2000,
-                 min_qualify_full=None, min_qualify_half=15, min_qualify_cash=5):
+                 min_qualify_full=None, min_qualify_half=15, min_qualify_cash=5,
+                 dd_switch_to_spy=0.15, reentry_min_qual=30, reentry_spy_ma=50,
+                 spy_cooldown_weeks=4):
     if min_qualify_full is None:
         min_qualify_full = buy_top
     if start_date is None:
@@ -130,9 +132,15 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
     date_to_idx = {d: i for i, d in enumerate(close.index)}
     friday_to_next = {dates[i]: dates[i + 1] for i in range(len(dates) - 1)}
 
+    spy_sma = close["SPY"].rolling(reentry_spy_ma).mean()
+
     initial_capital = buy_top * initial_cash_per_stock
     cash = float(initial_capital)
     positions: dict[str, float] = {}
+    spy_shares = 0.0
+    spy_mode = False
+    weeks_since_stock_entry = 999
+    peak_port_value = float(initial_capital)
     records = []
     trade_log = []
     buy_dates: dict[str, datetime] = {}
@@ -144,59 +152,106 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
         if friday not in friday_to_next:
             break
         idx = date_to_idx[friday]
+        spy_price = close.iloc[idx]["SPY"]
 
         top20 = qualify_at_date(close, symbols, idx)
         top20_set = {s for s, _ in top20}
         n_qual = len(top20)
 
         if n_qual < min_qualify_half:
-            n_buy = 0  # sit in cash, don't add new positions
+            n_buy = 0
         elif n_qual < min_qualify_full:
-            n_buy = buy_top // 2  # half positions
+            n_buy = buy_top // 2
         else:
             n_buy = buy_top
 
         buy_list = [s for s, _ in top20[:n_buy]] if n_buy > 0 else []
 
-        # --- sell: positions not in top20 pool ---
-        for sym in list(positions.keys()):
-            if sym not in top20_set:
-                price = close.iloc[idx][sym]
-                if pd.notna(price) and price > 0:
-                    proceeds = positions[sym] * price
+        # --- compute current holdings value & drawdown ---
+        h_val = spy_shares * spy_price if spy_mode else sum(
+            positions[s] * close.iloc[idx][s]
+            for s in positions if pd.notna(close.iloc[idx][s]))
+        port_value = cash + h_val
+        if port_value > peak_port_value:
+            peak_port_value = port_value
+        dd_from_peak = port_value / peak_port_value - 1
+
+        trading_mode = "stocks"
+
+        # --- SPY mode entry (drawdown protection, with cooldown) ---
+        if not spy_mode and dd_from_peak < -dd_switch_to_spy and weeks_since_stock_entry >= spy_cooldown_weeks:
+            for sym in list(positions.keys()):
+                p = close.iloc[idx][sym]
+                if pd.notna(p) and p > 0:
+                    proceeds = positions[sym] * p
                     cash += proceeds
                     trade_log.append({"date": friday, "action": "SELL", "symbol": sym,
-                                      "price": price, "qty": positions[sym],
-                                      "value": proceeds})
+                                      "price": p, "qty": positions[sym], "value": proceeds})
                     if sym in buy_dates:
-                        weeks = int((friday - buy_dates[sym]).days / 7)
-                        hold_periods.append(weeks)
+                        hold_periods.append(int((friday - buy_dates[sym]).days / 7))
                         del buy_dates[sym]
                     del positions[sym]
+            spy_shares = cash / spy_price
+            cash = 0.0
+            trade_log.append({"date": friday, "action": "BUY_SPY", "symbol": "SPY",
+                              "price": spy_price, "qty": spy_shares, "value": spy_shares * spy_price})
+            spy_mode = True
+            weeks_since_stock_entry = 999
+            h_val = spy_shares * spy_price
+            port_value = h_val
+            trading_mode = "spy_in"
 
+        # --- SPY mode exit (re-entry to stocks) ---
+        if spy_mode:
+            spy_above_ma = friday in spy_sma.index and spy_price > spy_sma.loc[friday]
+            if n_qual >= reentry_min_qual and spy_above_ma:
+                proceeds = spy_shares * spy_price
+                cash += proceeds
+                trade_log.append({"date": friday, "action": "SELL_SPY", "symbol": "SPY",
+                                  "price": spy_price, "qty": spy_shares, "value": proceeds})
+                spy_shares = 0.0
+                spy_mode = False
+                weeks_since_stock_entry = 0
+                h_val = 0.0
+                trading_mode = "stocks_in"
 
+        # --- normal stock trading (when NOT in SPY mode) ---
+        if not spy_mode:
+            for sym in list(positions.keys()):
+                if sym not in top20_set:
+                    p = close.iloc[idx][sym]
+                    if pd.notna(p) and p > 0:
+                        proceeds = positions[sym] * p
+                        cash += proceeds
+                        trade_log.append({"date": friday, "action": "SELL", "symbol": sym,
+                                          "price": p, "qty": positions[sym], "value": proceeds})
+                        if sym in buy_dates:
+                            hold_periods.append(int((friday - buy_dates[sym]).days / 7))
+                            del buy_dates[sym]
+                        del positions[sym]
 
-        # --- buy: top not yet held, if cash allows ---
-        for sym in buy_list:
-            if sym not in positions and cash >= initial_cash_per_stock:
-                price = close.iloc[idx][sym]
-                if pd.notna(price) and price > 0:
-                    shares = initial_cash_per_stock / price
-                    positions[sym] = shares
-                    buy_dates[sym] = friday
-                    cash -= initial_cash_per_stock
-                    trade_log.append({"date": friday, "action": "BUY", "symbol": sym,
-                                      "price": price, "qty": shares,
-                                      "value": initial_cash_per_stock})
+            for sym in buy_list:
+                if sym not in positions and cash >= initial_cash_per_stock:
+                    p = close.iloc[idx][sym]
+                    if pd.notna(p) and p > 0:
+                        shares = initial_cash_per_stock / p
+                        positions[sym] = shares
+                        buy_dates[sym] = friday
+                        cash -= initial_cash_per_stock
+                        trade_log.append({"date": friday, "action": "BUY", "symbol": sym,
+                                          "price": p, "qty": shares, "value": initial_cash_per_stock})
 
-        # --- record (skip first week — no forward return yet) ---
+            h_val = sum(positions[s] * close.iloc[idx][s]
+                        for s in positions if pd.notna(close.iloc[idx][s]))
+            port_value = cash + h_val
+
+        if not spy_mode and weeks_since_stock_entry < 999:
+            weeks_since_stock_entry += 1
+
+        # --- record ---
         if prev_friday is None:
             prev_friday = friday
             continue
-
-        h_val = sum(positions[s] * close.iloc[idx][s]
-                    for s in positions if pd.notna(close.iloc[idx][s]))
-        port_value = cash + h_val
 
         if prev_port_value is not None:
             weekly_r = port_value / prev_port_value - 1
@@ -211,10 +266,11 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
             "cash": cash,
             "port_value": port_value,
             "return": weekly_r,
-            "n_qualifiers": len(top20),
+            "n_qualifiers": n_qual,
             "n_positions": len(positions),
             "n_buy": n_buy,
-            "n_top10_held": sum(1 for s in buy_list if s in positions),
+            "spy_mode": spy_mode,
+            "trading_mode": trading_mode,
         })
         prev_friday = friday
 
@@ -354,6 +410,8 @@ def run_all_periods(top_n=20, buy_top=10, years=5, initial_cash_per_stock=2000):
         periods.append(("bear", f"熊市 {bear_window[0].date()}→{bear_window[1].date()}", bear_window[0], bear_window[1]))
     periods.append(("sideways", "猴市 2025-10-01→2026-04-29",
                     datetime(2025, 10, 1), datetime(2026, 4, 30)))
+    periods.append(("severe_bear", "最大回撤期 2021-11-05→2023-03-10",
+                    datetime(2021, 11, 5), datetime(2023, 3, 10)))
 
     results = []
     multi_pf = {}
@@ -363,7 +421,8 @@ def run_all_periods(top_n=20, buy_top=10, years=5, initial_cash_per_stock=2000):
         result = run_backtest(close, avail, name_map, start_date=sd, end_date=ed,
                               top_n=top_n, buy_top=buy_top,
                               initial_cash_per_stock=initial_cash_per_stock,
-                              min_qualify_full=buy_top, min_qualify_half=15, min_qualify_cash=5)
+                              min_qualify_full=buy_top, min_qualify_half=15, min_qualify_cash=5,
+                              dd_switch_to_spy=0.15, reentry_min_qual=30, reentry_spy_ma=50)
         if result is None:
             print("  ⚠️ 数据不足")
             continue
@@ -375,7 +434,7 @@ def run_all_periods(top_n=20, buy_top=10, years=5, initial_cash_per_stock=2000):
     # Combined equity curve
     if multi_pf:
         fig, ax = plt.subplots(figsize=(14, 6))
-        colors = {"full": "#2196F3", "bull": "#4CAF50", "bear": "#f44336", "sideways": "#FF9800"}
+        colors = {"full": "#2196F3", "bull": "#4CAF50", "bear": "#f44336", "sideways": "#FF9800", "severe_bear": "#9C27B0"}
         labels_dict = {k: lbl for k, lbl, _, _ in periods}
         for key, pf in multi_pf.items():
             label = labels_dict.get(key, key)

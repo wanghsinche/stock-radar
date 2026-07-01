@@ -319,6 +319,8 @@ def run_all_periods(top_n=20, buy_top=10, years=5, initial_cash_per_stock=2000):
         periods.append(("bull", f"牛市 {bull_window[0].date()}→{bull_window[1].date()}", bull_window[0], bull_window[1]))
     if bear_window:
         periods.append(("bear", f"熊市 {bear_window[0].date()}→{bear_window[1].date()}", bear_window[0], bear_window[1]))
+    periods.append(("sideways", "猴市 2025-10-01→2026-04-29",
+                    datetime(2025, 10, 1), datetime(2026, 4, 30)))
 
     results = []
     multi_pf = {}
@@ -339,7 +341,7 @@ def run_all_periods(top_n=20, buy_top=10, years=5, initial_cash_per_stock=2000):
     # Combined equity curve
     if multi_pf:
         fig, ax = plt.subplots(figsize=(14, 6))
-        colors = {"full": "#2196F3", "bull": "#4CAF50", "bear": "#f44336"}
+        colors = {"full": "#2196F3", "bull": "#4CAF50", "bear": "#f44336", "sideways": "#FF9800"}
         labels_dict = {k: lbl for k, lbl, _, _ in periods}
         for key, pf in multi_pf.items():
             label = labels_dict.get(key, key)

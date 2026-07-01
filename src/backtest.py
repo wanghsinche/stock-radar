@@ -1,7 +1,6 @@
 """
-回测 — SP500 20日新高 + 每周轮动策略
-每周五：筛选过去20个交易日内创20日新高的股票（新高日落在本周），按20日涨幅排名选Top N
-等权持有至下周五，轮动
+回测 — 20日新高 + 严进宽出轮动策略
+池子20只：20日新高筛选前20名。买top10，持mid10，跌出池子就卖。
 """
 
 import os
@@ -16,27 +15,35 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+from src.scanner import fetch_sp500_constituents
+from src.scanner import qualify_20day_highs
+
 _FONT_PATH = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
 if os.path.exists(_FONT_PATH):
     fm.fontManager.addfont(_FONT_PATH)
     plt.rcParams["font.family"] = ["Noto Sans CJK JP", "DejaVu Sans"]
     plt.rcParams["axes.unicode_minus"] = False
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
-from src.scanner import fetch_sp500_constituents
-
 _OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "reports", "backtest")
 
 
-def _fmt_pct(v: float) -> str:
+def _fmt_pct(v):
     return f"{v * 100:.2f}%"
 
 
-def _load_data(symbols: list[str], years: int = 3) -> pd.DataFrame:
+def _fmt_usd(v):
+    if abs(v) >= 1_000_000:
+        return f"${v / 1_000_000:.2f}M"
+    if abs(v) >= 1_000:
+        return f"${v:,.0f}"
+    return f"${v:.2f}"
+
+
+def _load_data(symbols, years=5):
     end = datetime.today()
     start = end - timedelta(days=years * 370)
-
     print(f"  Downloading {len(symbols)} tickers ({years} years)...")
     data = yf.download(
         list(set(symbols + ["SPY"])),
@@ -48,27 +55,46 @@ def _load_data(symbols: list[str], years: int = 3) -> pd.DataFrame:
     close = data["Close"].dropna(axis=1, how="all")
     if isinstance(close.columns, pd.MultiIndex):
         close = close.droplevel(0, axis=1)
-
-    print(f"  Daily range: {close.index[0].date()} → {close.index[-1].date()}")
-    print(f"  Trading days: {len(close)}")
+    print(f"  Range: {close.index[0].date()} → {close.index[-1].date()}  ({len(close)} days)")
     return close
 
 
-def _qualify_stocks(close: pd.DataFrame, symbols: list[str], friday_idx: int) -> list[tuple[str, float]]:
-    """
-    For a given Friday index in the close DataFrame:
-    - Look back 20 trading days window: [friday_idx - 19, friday_idx]
-    - A stock qualifies if its max close in this window falls in the last 5 trading days
-    - For qualifiers, compute 20-day return: close[friday] / close[friday - 20] - 1
-    Returns list of (symbol, 20d_return) sorted descending.
-    """
-    if friday_idx < 20:
+def detect_bull_bear_windows(close, window=120):
+    spy = close["SPY"] if "SPY" in close.columns else None
+    if spy is None:
+        return None, None
+
+    ret = spy.pct_change(window).dropna()
+    if ret.empty:
+        return None, None
+
+    best_date = ret.idxmax()
+    worst_date = ret.idxmin()
+    idx_map = {d: i for i, d in enumerate(close.index)}
+
+    def get_start(end_date):
+        pos = idx_map.get(end_date)
+        if pos is None or pos < window:
+            return None
+        return close.index[pos - window]
+
+    bull = None
+    bear = None
+    bs = get_start(best_date)
+    if bs is not None:
+        bull = (bs, best_date)
+    ws = get_start(worst_date)
+    if ws is not None:
+        bear = (ws, worst_date)
+    return bull, bear
+
+
+def qualify_at_date(close, symbols, idx):
+    if idx < 20:
         return []
-
-    window = close.iloc[friday_idx - 19 : friday_idx + 1]
-    cutoff = window.index[-5]  # last 5 trading days start
-    past = close.iloc[friday_idx - 20]  # 20 trading days ago
-
+    window = close.iloc[idx - 19: idx + 1]
+    cutoff = window.index[-5]
+    past = close.iloc[idx - 20]
     results = []
     for sym in symbols:
         if sym not in close.columns:
@@ -76,168 +102,185 @@ def _qualify_stocks(close: pd.DataFrame, symbols: list[str], friday_idx: int) ->
         series = window[sym].dropna()
         if len(series) < 20:
             continue
-
-        max_val = series.max()
         max_date = series.idxmax()
-
         if max_date >= cutoff:
-            cur = close.loc[window.index[-1], sym]
-            if pd.notna(cur) and pd.notna(past.get(sym, None)) and past[sym] > 0:
-                ret_20d = cur / past[sym] - 1
-                results.append((sym, ret_20d))
-
+            cur = close.iloc[idx][sym]
+            p = past[sym]
+            if pd.notna(cur) and pd.notna(p) and p > 0:
+                results.append((sym, cur / p - 1))
     results.sort(key=lambda x: x[1], reverse=True)
     return results
 
 
-def run_backtest(top_n: int = 20, years: int = 3) -> dict:
-    os.makedirs(_OUTPUT_DIR, exist_ok=True)
+def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
+                 top_n=20, buy_top=10, initial_cash_per_stock=2000):
+    if start_date is None:
+        start_date = close.index[0]
+    if end_date is None:
+        end_date = close.index[-1]
 
-    print(f"{'=' * 60}")
-    print(f"  📊 SP500 20日新高轮动回测")
-    print(f"{'=' * 60}")
-    print(f"  条件: 过去20日中最高价落在近5日（本周）")
-    print(f"  排名: 按20日涨幅选 Top {top_n}, 等权持有 1 周")
-    print(f"  区间: 最近 {years} 年")
-    print()
+    dates = close.resample("W-FRI").last().index
+    dates = [d for d in dates if start_date <= d <= end_date and d in close.index]
+    if len(dates) < 2:
+        return None
 
-    constituents = fetch_sp500_constituents()
-    symbols = constituents["Symbol"].tolist()
-    name_map = dict(zip(constituents["Symbol"], constituents["Security"]))
-
-    close = _load_data(symbols, years)
-    avail = [s for s in symbols if s in close.columns]
-    spy = close["SPY"] if "SPY" in close.columns else None
-
-    # Get all Friday dates in the data
-    all_fridays = pd.Series(close.resample("W-FRI").last().index)
-    all_fridays = all_fridays[all_fridays.isin(close.index)].tolist()
-
-    # Build index map
     date_to_idx = {d: i for i, d in enumerate(close.index)}
-    friday_to_next = {all_fridays[i]: all_fridays[i + 1] for i in range(len(all_fridays) - 1)}
+    friday_to_next = {dates[i]: dates[i + 1] for i in range(len(dates) - 1)}
 
-    # Run weekly simulation
+    initial_capital = buy_top * initial_cash_per_stock
+    cash = float(initial_capital)
+    positions = {}
     records = []
-    prev_selected: list[str] = []
-    trades = []
-    name_map_sym = dict(zip(constituents["Symbol"], constituents["Security"]))
+    trade_log = []
+    prev_friday = None
+    prev_port_value = None
 
-    for friday in all_fridays:
+    for friday in dates:
         if friday not in friday_to_next:
             break
-        next_friday = friday_to_next[friday]
         idx = date_to_idx[friday]
-        qualified = _qualify_stocks(close, avail, idx)
 
-        if not qualified:
+        top20 = qualify_at_date(close, symbols, idx)
+        if len(top20) < buy_top:
+            continue
+        top20_set = {s for s, _ in top20}
+        top10 = [s for s, _ in top20[:buy_top]]
+
+        # --- sell: positions not in top20 pool ---
+        for sym in list(positions.keys()):
+            if sym not in top20_set:
+                price = close.iloc[idx][sym]
+                if pd.notna(price) and price > 0:
+                    proceeds = positions[sym] * price
+                    cash += proceeds
+                    trade_log.append({"date": friday, "action": "SELL", "symbol": sym,
+                                      "price": price, "qty": positions[sym],
+                                      "value": proceeds})
+                    del positions[sym]
+
+        # --- buy: top10 not yet held, if cash allows ---
+        for sym in top10:
+            if sym not in positions and cash >= initial_cash_per_stock:
+                price = close.iloc[idx][sym]
+                if pd.notna(price) and price > 0:
+                    shares = initial_cash_per_stock / price
+                    positions[sym] = shares
+                    cash -= initial_cash_per_stock
+                    trade_log.append({"date": friday, "action": "BUY", "symbol": sym,
+                                      "price": price, "qty": shares,
+                                      "value": initial_cash_per_stock})
+
+        # --- record (skip first week — no forward return yet) ---
+        if prev_friday is None:
+            prev_friday = friday
             continue
 
-        selected = [s for s, _ in qualified[:top_n]]
-        rets_20d = dict(qualified)
-        next_idx = date_to_idx[next_friday]
+        h_val = sum(positions[s] * close.iloc[idx][s]
+                    for s in positions if pd.notna(close.iloc[idx][s]))
+        port_value = cash + h_val
 
-        fwd_rets = []
-        for sym in selected:
-            p0 = close.iloc[idx][sym]
-            p1 = close.iloc[next_idx][sym]
-            if pd.notna(p0) and pd.notna(p1) and p0 > 0:
-                fwd_rets.append(p1 / p0 - 1)
-        port_ret = np.mean(fwd_rets) if fwd_rets else 0
+        if prev_port_value is not None:
+            weekly_r = port_value / prev_port_value - 1
+        else:
+            weekly_r = 0.0
+        prev_port_value = port_value
 
-        record = {
+        records.append({
             "date": friday,
-            "next_date": next_friday,
-            "n_qualifiers": len(qualified),
-            "return_20d_avg": np.mean([rets_20d[s] for s in selected]),
-            "return": port_ret,
-            "selected": selected,
-        }
-        records.append(record)
+            "prev_date": prev_friday,
+            "holdings_value": h_val,
+            "cash": cash,
+            "port_value": port_value,
+            "return": weekly_r,
+            "n_qualifiers": len(top20),
+            "n_positions": len(positions),
+            "n_top10_held": sum(1 for s in top10 if s in positions),
+        })
+        prev_friday = friday
 
-        # Track turnover
-        cur_set = set(selected)
-        prev_set = set(prev_selected)
-        if prev_selected:
-            trades.append({
-                "date": friday,
-                "n_qualifiers": len(qualified),
-                "new_buys": [s for s in selected if s not in prev_set],
-                "sells": [s for s in prev_selected if s not in cur_set],
-                "hold": [s for s in selected if s in prev_set],
-            })
-        prev_selected = selected
+    if not records:
+        return None
 
-    # Build performance DataFrame
     pf = pd.DataFrame(records).set_index("date")
     pf["cum_return"] = (1 + pf["return"]).cumprod()
     pf["peak"] = pf["cum_return"].cummax()
     pf["drawdown"] = pf["cum_return"] / pf["peak"] - 1
+    pf["capital_util"] = pf["holdings_value"] / (pf["holdings_value"] + pf["cash"])
 
-    # SPY benchmark: buy-and-hold over same period
-    if spy is not None and not pf.empty:
-        spy_entry = spy.loc[pf.index].values
-        spy_exit = spy.loc[pf["next_date"]].values
-        spy_ret = pd.Series(spy_exit / spy_entry - 1, index=pf.index)
-        pf["spy_return"] = spy_ret
-        pf["spy_cum"] = (1 + pf["spy_return"]).cumprod()
+    # SPY benchmark
+    spy_prices = close["SPY"]
+    spy_vals = pd.DataFrame({
+        "entry": spy_prices.loc[pf["prev_date"]].values,
+        "exit": spy_prices.loc[pf.index].values,
+    }, index=pf.index)
+    pf["spy_return"] = spy_vals["exit"] / spy_vals["entry"] - 1
+    pf["spy_cum"] = (1 + pf["spy_return"]).cumprod()
 
-    return {"pf": pf, "trades": trades, "close": close, "name_map": name_map_sym}
+    return {
+        "pf": pf,
+        "trade_log": trade_log,
+        "initial_capital": initial_capital,
+        "total_buys": sum(1 for t in trade_log if t["action"] == "BUY"),
+        "total_sells": sum(1 for t in trade_log if t["action"] == "SELL"),
+    }
 
 
-def compute_performance(pf: pd.DataFrame, rf: float = 0.05) -> dict:
+def compute_metrics(result):
+    pf = result["pf"]
     total_ret = pf["cum_return"].iloc[-1] - 1
     years = (pf.index[-1] - pf.index[0]).days / 365.25
     cagr = (1 + total_ret) ** (1 / years) - 1
-
     dd = pf["drawdown"]
     max_dd = dd.min()
-
     weekly_r = pf["return"]
-    excess_pa = weekly_r.mean() * 52 - rf
-    std_pa = weekly_r.std() * np.sqrt(52)
-    sharpe = excess_pa / std_pa if std_pa > 0 else 0
-
     win_rate = (weekly_r > 0).mean()
-    avg_win = weekly_r[weekly_r > 0].mean() if (weekly_r > 0).any() else 0
-    avg_loss = weekly_r[weekly_r < 0].mean() if (weekly_r < 0).any() else 0
-    profit_factor = (
-        weekly_r[weekly_r > 0].sum() / abs(weekly_r[weekly_r < 0].sum())
-        if (weekly_r < 0).any()
-        else float("inf")
-    )
-
-    result = {
-        "总收益率": _fmt_pct(total_ret),
-        "年化收益率": _fmt_pct(cagr),
-        "最大回撤": _fmt_pct(max_dd),
-        "夏普比": f"{sharpe:.2f}",
-        "胜率": _fmt_pct(win_rate),
-        "平均周盈利": _fmt_pct(avg_win),
-        "平均周亏损": _fmt_pct(avg_loss),
-        "盈亏比": f"{avg_win / abs(avg_loss) if avg_loss != 0 else float('inf'):.2f}",
-        "获利因子": f"{profit_factor:.2f}",
-        "交易周数": f"{len(weekly_r)}",
-    }
 
     if "spy_cum" in pf.columns:
         spy_total = pf["spy_cum"].iloc[-1] - 1
         spy_cagr = (1 + spy_total) ** (1 / years) - 1
-        result["SPY 总收益率"] = _fmt_pct(spy_total)
-        result["SPY 年化"] = _fmt_pct(spy_cagr)
+    else:
+        spy_total = spy_cagr = 0
 
-    return result
+    return {
+        "period": f"{pf.index[0].date()} → {pf.index[-1].date()}",
+        "weeks": len(pf),
+        "initial_capital": result["initial_capital"],
+        "port_value": pf["port_value"].iloc[-1],
+        "total_ret": total_ret,
+        "cagr": cagr,
+        "max_dd": max_dd,
+        "win_rate": win_rate,
+        "spy_total": spy_total,
+        "spy_cagr": spy_cagr,
+        "total_buys": result["total_buys"],
+        "total_sells": result["total_sells"],
+    }
 
 
-def plot_equity_curve(pf: pd.DataFrame, output_path: str):
+def print_results(perf, title="回测结果"):
+    print(f"\n  {title}")
+    print(f"  {'=' * 50}")
+    print(f"  运行区间    {perf['period']} ({perf['weeks']} 周)")
+    print(f"  初始资金    {_fmt_usd(perf['initial_capital'])}")
+    print(f"  当前价值    {_fmt_usd(perf['port_value'])}")
+    print(f"  收益率      {_fmt_pct(perf['total_ret'])}")
+    print(f"  年化        {_fmt_pct(perf['cagr'])}")
+    print(f"  最大回撤    {_fmt_pct(perf['max_dd'])}")
+    print(f"  胜率        {_fmt_pct(perf['win_rate'])}")
+    print(f"  SPY 收益    {_fmt_pct(perf['spy_total'])} ({_fmt_pct(perf['spy_cagr'])} 年化)")
+    print(f"  交易次数    {perf['total_buys']} 买 / {perf['total_sells']} 卖")
+    print(f"  {'=' * 50}")
+
+
+def plot_equity_curve(pf, label, output_path):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 8), gridspec_kw={"height_ratios": [3, 1]})
 
-    ax1.plot(pf.index, pf["cum_return"], label="Top 20 轮动", linewidth=2, color="#2196F3")
+    ax1.plot(pf.index, pf["cum_return"], label=f"策略 ({label})", linewidth=2, color="#2196F3")
     if "spy_cum" in pf.columns:
         ax1.plot(pf.index, pf["spy_cum"], label="SPY 买入持有", linewidth=2, color="#FF5722", alpha=0.7)
     ax1.axhline(1.0, color="gray", linestyle="--", linewidth=0.5)
     ax1.set_ylabel("累计收益")
-    ax1.set_title("SP500 20日新高轮动 — 回测权益曲线")
+    ax1.set_title(f"20日新高轮动回测 — {label}")
     ax1.legend(loc="upper left")
     ax1.grid(True, alpha=0.3)
 
@@ -246,39 +289,88 @@ def plot_equity_curve(pf: pd.DataFrame, output_path: str):
     ax2.set_ylabel("回撤 (%)")
     ax2.set_xlabel("日期")
     ax2.grid(True, alpha=0.3)
-
     plt.tight_layout()
-    if output_path:
-        fig.savefig(output_path, dpi=150, bbox_inches="tight")
+    fig.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
     print(f"  ✓ 权益曲线 -> {output_path}")
 
 
-def main(top_n: int = 20, years: int = 3):
-    result = run_backtest(top_n=top_n, years=years)
-    pf = result["pf"]
+def run_all_periods(top_n=20, buy_top=10, years=5, initial_cash_per_stock=2000):
+    os.makedirs(_OUTPUT_DIR, exist_ok=True)
+    print("=" * 60)
+    print("  📊 20日新高轮动回测 — 严进宽出")
+    print("  " + "=" * 60)
+    print(f"  池子 {top_n} 只, 买 top {buy_top}")
+    print(f"  初始 ${buy_top * initial_cash_per_stock:,}, 每只 ${initial_cash_per_stock:,}")
+    print()
 
-    perf = compute_performance(pf)
+    constituents = fetch_sp500_constituents()
+    symbols = constituents["Symbol"].tolist()
+    name_map = dict(zip(constituents["Symbol"], constituents["Security"]))
+    close = _load_data(symbols, years)
+    avail = [s for s in symbols if s in close.columns]
 
-    print(f"\n{'=' * 60}")
-    print(f"  回测结果")
-    print(f"{'=' * 60}")
-    for k, v in perf.items():
-        print(f"  {k:<14} {v}")
+    bull_window, bear_window = detect_bull_bear_windows(close)
 
-    trades = result["trades"]
-    if trades:
-        avg_churn = np.mean([len(t["new_buys"]) + len(t["sells"]) for t in trades])
-        print(f"  平均换手    {avg_churn:.0f} 只/周 ({(avg_churn / (top_n * 2)) * 100:.0f}%)")
-    print(f"  数据跨度    {len(result['close'])} 个交易日")
+    periods = [
+        ("full", "全周期", None, None),
+    ]
+    if bull_window:
+        periods.append(("bull", f"牛市 {bull_window[0].date()}→{bull_window[1].date()}", bull_window[0], bull_window[1]))
+    if bear_window:
+        periods.append(("bear", f"熊市 {bear_window[0].date()}→{bear_window[1].date()}", bear_window[0], bear_window[1]))
 
-    chart_path = os.path.join(_OUTPUT_DIR, "equity_curve.png")
-    plot_equity_curve(pf, chart_path)
+    results = []
+    multi_pf = {}
 
-    print(f"{'=' * 60}\n")
+    for key, label, sd, ed in periods:
+        print(f"\n  ▶ {label}")
+        result = run_backtest(close, avail, name_map, start_date=sd, end_date=ed,
+                              top_n=top_n, buy_top=buy_top,
+                              initial_cash_per_stock=initial_cash_per_stock)
+        if result is None:
+            print("  ⚠️ 数据不足")
+            continue
+        perf = compute_metrics(result)
+        print_results(perf, label)
+        results.append((key, label, perf, result))
+        multi_pf[key] = result["pf"]
 
-    return result
+    # Combined equity curve
+    if multi_pf:
+        fig, ax = plt.subplots(figsize=(14, 6))
+        colors = {"full": "#2196F3", "bull": "#4CAF50", "bear": "#f44336"}
+        labels_dict = {k: lbl for k, lbl, _, _ in periods}
+        for key, pf in multi_pf.items():
+            label = labels_dict.get(key, key)
+            ax.plot(pf.index, pf["cum_return"], label=label, linewidth=2, color=colors.get(key, "#999"))
+        ax.axhline(1.0, color="gray", linestyle="--", linewidth=0.5)
+        ax.set_ylabel("累计收益")
+        ax.set_title("20日新高轮动 — 多区间对比")
+        ax.legend(loc="upper left")
+        ax.grid(True, alpha=0.3)
+        chart_path = os.path.join(_OUTPUT_DIR, "equity_curve.png")
+        fig.savefig(chart_path, dpi=150, bbox_inches="tight")
+        plt.close(fig)
+        print(f"\n  ✓ 合并权益曲线 -> {chart_path}")
+
+        # Send to Telegram
+        try:
+            from src.notifier import send_photo
+            summary_lines = []
+            for key, label, perf, _ in results:
+                summary_lines.append(
+                    f"{'🟢' if perf['total_ret'] > 0 else '🔴'} <b>{label}</b>: "
+                    f"{_fmt_pct(perf['total_ret'])}  |  SPY {_fmt_pct(perf['spy_total'])}"
+                )
+            caption = "📊 <b>20日新高轮动回测</b>\n" + "\n".join(summary_lines)
+            send_photo(chart_path, caption=caption)
+        except Exception as e:
+            print(f"  ⚠️ TG send failed: {e}")
+
+    print(f"\n{'=' * 60}\n")
+    return results
 
 
 if __name__ == "__main__":
-    main()
+    run_all_periods()

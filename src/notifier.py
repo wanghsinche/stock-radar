@@ -35,11 +35,15 @@ def format_message(df, title: str = None) -> str:
     return "\n".join(lines)
 
 
-def send_telegram(df, config: dict):
+def _get_env():
     load_dotenv()
     token = os.getenv("TELEGRAM_BOT_TOKEN", "")
     chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+    return token, chat_id
 
+
+def send_telegram(df, config: dict = None):
+    token, chat_id = _get_env()
     if not chat_id:
         print("  ⚠️ TELEGRAM_CHAT_ID not set, skipping")
         return
@@ -51,6 +55,25 @@ def send_telegram(df, config: dict):
         print(f"  ✓ Telegram message sent to {chat_id}")
     except TelegramError as e:
         print(f"  ✗ Telegram send failed: {e}")
+
+
+def send_photo(photo_path: str, caption: str = ""):
+    token, chat_id = _get_env()
+    if not chat_id:
+        print("  ⚠️ TELEGRAM_CHAT_ID not set, skipping")
+        return
+
+    if not os.path.exists(photo_path):
+        print(f"  ⚠️ Photo not found: {photo_path}")
+        return
+
+    bot = Bot(token=token)
+    try:
+        with open(photo_path, "rb") as f:
+            asyncio.run(bot.send_photo(chat_id=chat_id, photo=f, caption=caption, parse_mode="HTML"))
+        print(f"  ✓ Photo sent to {chat_id}")
+    except TelegramError as e:
+        print(f"  ✗ Photo send failed: {e}")
 
 
 def main(df=None):

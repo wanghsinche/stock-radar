@@ -28,9 +28,8 @@ def main():
 
     config = load_config()
     top_n = config.get("radar", {}).get("top_n", 20)
-    lookback = config.get("radar", {}).get("lookback_days", 20)
 
-    df = scan_top_strong(top_n=top_n, lookback_days=lookback)
+    df = scan_top_strong(top_n=top_n)
 
     print(f"\n{'=' * 60}")
     print(f"  📤 Sending to Telegram...")

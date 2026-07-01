@@ -7,7 +7,7 @@ module.exports = {
     interpreter: 'none',
     instances: 1,
     autorestart: false,
-    cron_restart: '30 16 * * 1-5',
+    cron_restart: '0 6 * * 6',
     watch: false,
     max_memory_restart: '512M',
     log_file: '/root/work/plusefin-landing-page/stock-radar/logs/radar.log',

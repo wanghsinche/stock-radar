@@ -12,6 +12,7 @@ dependencies = [
     "python-dotenv>=1.0",
     "lxml>=6.1.1",
     "html5lib>=1.1",
+    "matplotlib>=3.10.9",
 ]
 
 [build-system]

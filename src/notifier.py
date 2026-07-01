@@ -25,7 +25,10 @@ def format_message(df, title: str = None) -> str:
 
     for _, r in df.iterrows():
         bar = "🟢" if r["Return_pct"] > 0 else "🔴"
+        name = r.get("Security", "")[:20]
+        high_date = r.get("High_Date", "")
         lines.append(f"  #{int(r['Rank'])}  {bar} <b>{r['Symbol']}</b>  {r['Return_pct']:+6.2f}%")
+        lines.append(f"      {name}  ┊ 新高{high_date}")
 
     lines.append("")
     lines.append("🤖 #stock-radar")

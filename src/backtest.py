@@ -132,6 +132,8 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
     positions = {}
     records = []
     trade_log = []
+    buy_dates: dict[str, datetime] = {}
+    hold_periods: list[int] = []
     prev_friday = None
     prev_port_value = None
 
@@ -156,6 +158,10 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
                     trade_log.append({"date": friday, "action": "SELL", "symbol": sym,
                                       "price": price, "qty": positions[sym],
                                       "value": proceeds})
+                    if sym in buy_dates:
+                        weeks = int((friday - buy_dates[sym]).days / 7)
+                        hold_periods.append(weeks)
+                        del buy_dates[sym]
                     del positions[sym]
 
         # --- buy: top10 not yet held, if cash allows ---
@@ -165,6 +171,7 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
                 if pd.notna(price) and price > 0:
                     shares = initial_cash_per_stock / price
                     positions[sym] = shares
+                    buy_dates[sym] = friday
                     cash -= initial_cash_per_stock
                     trade_log.append({"date": friday, "action": "BUY", "symbol": sym,
                                       "price": price, "qty": shares,
@@ -216,12 +223,22 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
     pf["spy_return"] = spy_vals["exit"] / spy_vals["entry"] - 1
     pf["spy_cum"] = (1 + pf["spy_return"]).cumprod()
 
+    # Include currently held stocks in hold period stats
+    for sym, buy_date in buy_dates.items():
+        weeks = int((records[-1]["date"] - buy_date).days / 7) if records else 0
+        hold_periods.append(weeks)
+
+    avg_hold = np.mean(hold_periods) if hold_periods else 0
+    med_hold = float(np.median(hold_periods)) if hold_periods else 0
+
     return {
         "pf": pf,
         "trade_log": trade_log,
         "initial_capital": initial_capital,
         "total_buys": sum(1 for t in trade_log if t["action"] == "BUY"),
         "total_sells": sum(1 for t in trade_log if t["action"] == "SELL"),
+        "avg_hold_weeks": round(avg_hold, 1),
+        "med_hold_weeks": round(med_hold, 1),
     }
 
 
@@ -254,6 +271,8 @@ def compute_metrics(result):
         "spy_cagr": spy_cagr,
         "total_buys": result["total_buys"],
         "total_sells": result["total_sells"],
+        "avg_hold_weeks": result["avg_hold_weeks"],
+        "med_hold_weeks": result["med_hold_weeks"],
     }
 
 
@@ -269,6 +288,7 @@ def print_results(perf, title="回测结果"):
     print(f"  胜率        {_fmt_pct(perf['win_rate'])}")
     print(f"  SPY 收益    {_fmt_pct(perf['spy_total'])} ({_fmt_pct(perf['spy_cagr'])} 年化)")
     print(f"  交易次数    {perf['total_buys']} 买 / {perf['total_sells']} 卖")
+    print(f"  平均持股    {perf['avg_hold_weeks']} 周 (中位数 {perf['med_hold_weeks']} 周)")
     print(f"  {'=' * 50}")
 
 

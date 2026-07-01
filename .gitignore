@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+logs/
+*.log
+.env
+config_local.yaml
+reports/

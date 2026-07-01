@@ -113,7 +113,10 @@ def qualify_at_date(close, symbols, idx):
 
 
 def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
-                 top_n=20, buy_top=10, initial_cash_per_stock=2000):
+                 top_n=20, buy_top=10, initial_cash_per_stock=2000,
+                 min_qualify_full=None, min_qualify_half=15, min_qualify_cash=5):
+    if min_qualify_full is None:
+        min_qualify_full = buy_top
     if start_date is None:
         start_date = close.index[0]
     if end_date is None:
@@ -129,7 +132,7 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
 
     initial_capital = buy_top * initial_cash_per_stock
     cash = float(initial_capital)
-    positions = {}
+    positions: dict[str, float] = {}
     records = []
     trade_log = []
     buy_dates: dict[str, datetime] = {}
@@ -143,10 +146,17 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
         idx = date_to_idx[friday]
 
         top20 = qualify_at_date(close, symbols, idx)
-        if len(top20) < buy_top:
-            continue
         top20_set = {s for s, _ in top20}
-        top10 = [s for s, _ in top20[:buy_top]]
+        n_qual = len(top20)
+
+        if n_qual < min_qualify_half:
+            n_buy = 0  # sit in cash, don't add new positions
+        elif n_qual < min_qualify_full:
+            n_buy = buy_top // 2  # half positions
+        else:
+            n_buy = buy_top
+
+        buy_list = [s for s, _ in top20[:n_buy]] if n_buy > 0 else []
 
         # --- sell: positions not in top20 pool ---
         for sym in list(positions.keys()):
@@ -164,8 +174,10 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
                         del buy_dates[sym]
                     del positions[sym]
 
-        # --- buy: top10 not yet held, if cash allows ---
-        for sym in top10:
+
+
+        # --- buy: top not yet held, if cash allows ---
+        for sym in buy_list:
             if sym not in positions and cash >= initial_cash_per_stock:
                 price = close.iloc[idx][sym]
                 if pd.notna(price) and price > 0:
@@ -201,7 +213,8 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
             "return": weekly_r,
             "n_qualifiers": len(top20),
             "n_positions": len(positions),
-            "n_top10_held": sum(1 for s in top10 if s in positions),
+            "n_buy": n_buy,
+            "n_top10_held": sum(1 for s in buy_list if s in positions),
         })
         prev_friday = friday
 
@@ -349,7 +362,8 @@ def run_all_periods(top_n=20, buy_top=10, years=5, initial_cash_per_stock=2000):
         print(f"\n  ▶ {label}")
         result = run_backtest(close, avail, name_map, start_date=sd, end_date=ed,
                               top_n=top_n, buy_top=buy_top,
-                              initial_cash_per_stock=initial_cash_per_stock)
+                              initial_cash_per_stock=initial_cash_per_stock,
+                              min_qualify_full=buy_top, min_qualify_half=15, min_qualify_cash=5)
         if result is None:
             print("  ⚠️ 数据不足")
             continue

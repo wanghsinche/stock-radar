@@ -191,8 +191,8 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
                         hold_periods.append(int((friday - buy_dates[sym]).days / 7))
                         del buy_dates[sym]
                     del positions[sym]
-            spy_shares = cash / spy_price
-            cash = 0.0
+            spy_shares = int(cash / spy_price)
+            cash -= spy_shares * spy_price
             trade_log.append({"date": friday, "action": "BUY_SPY", "symbol": "SPY",
                               "price": spy_price, "qty": spy_shares, "value": spy_shares * spy_price})
             spy_mode = True
@@ -234,12 +234,17 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
                 if sym not in positions and cash >= initial_cash_per_stock:
                     p = close.iloc[idx][sym]
                     if pd.notna(p) and p > 0:
-                        shares = initial_cash_per_stock / p
+                        shares = int(initial_cash_per_stock / p)
+                        if shares == 0:
+                            continue
+                        cost = shares * p
+                        if cash < cost:
+                            continue
                         positions[sym] = shares
                         buy_dates[sym] = friday
-                        cash -= initial_cash_per_stock
+                        cash -= cost
                         trade_log.append({"date": friday, "action": "BUY", "symbol": sym,
-                                          "price": p, "qty": shares, "value": initial_cash_per_stock})
+                                          "price": p, "qty": shares, "value": cost})
 
             h_val = sum(positions[s] * close.iloc[idx][s]
                         for s in positions if pd.notna(close.iloc[idx][s]))
@@ -422,7 +427,7 @@ def run_all_periods(top_n=20, buy_top=10, years=5, initial_cash_per_stock=2000):
                               top_n=top_n, buy_top=buy_top,
                               initial_cash_per_stock=initial_cash_per_stock,
                               min_qualify_full=buy_top, min_qualify_half=15, min_qualify_cash=5,
-                              dd_switch_to_spy=0.15, reentry_min_qual=30, reentry_spy_ma=50)
+                               dd_switch_to_spy=0.15, reentry_min_qual=30, reentry_spy_ma=50)
         if result is None:
             print("  ⚠️ 数据不足")
             continue

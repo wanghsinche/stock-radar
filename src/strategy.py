@@ -212,7 +212,28 @@ def main():
             p = close[s].iloc[-1] if s in close.columns else 0
             cash_available += last["positions"][s] * p if pd.notna(p) else 0
 
-    can_buy_n = min(len(buy_list), int(cash_available / initial_cash_per_stock))
+    def _shares(price):
+        return int(initial_cash_per_stock / price) if price > 0 else 0
+
+    remaining = cash_available
+    can_buy_n = 0
+    for sym in buy_list:
+        p = close[sym].iloc[-1] if sym in close.columns else 0
+        if pd.notna(p) and p > 0:
+            n = _shares(p)
+            if n == 0:
+                continue
+            cost = n * p
+            if remaining >= cost:
+                remaining -= cost
+                can_buy_n += 1
+            else:
+                break
+        else:
+            cost = initial_cash_per_stock
+            if remaining >= cost:
+                remaining -= cost
+                can_buy_n += 1
 
     # 9. Build strategy JSON
     now = datetime.now()
@@ -279,29 +300,23 @@ def _format_strategy_msg(strategy: dict, name_map: dict) -> str:
 
     if strategy["buy_list"]:
         lines.append("📗 <b>买入</b>")
-        for s in strategy["buy_list"][:5]:
+        for s in strategy["buy_list"]:
             name = name_map.get(s, s)
             lines.append(f"  • {s}  {name}")
-        if len(strategy["buy_list"]) > 5:
-            lines.append(f"  ... +{len(strategy['buy_list'])-5} more")
         lines.append("")
 
     if strategy["hold_list"]:
         lines.append("📘 <b>持有</b>")
-        for s in strategy["hold_list"][:5]:
+        for s in strategy["hold_list"]:
             name = name_map.get(s, s)
             lines.append(f"  • {s}  {name}")
-        if len(strategy["hold_list"]) > 5:
-            lines.append(f"  ... +{len(strategy['hold_list'])-5} more")
         lines.append("")
 
     if strategy["sell_list"]:
         lines.append("📕 <b>卖出</b>")
-        for s in strategy["sell_list"][:5]:
+        for s in strategy["sell_list"]:
             name = name_map.get(s, s)
             lines.append(f"  • {s}  {name}")
-        if len(strategy["sell_list"]) > 5:
-            lines.append(f"  ... +{len(strategy['sell_list'])-5} more")
         lines.append("")
 
     if not strategy["sell_list"] and not strategy["buy_list"]:

@@ -67,6 +67,20 @@ def _save_account_id(account_id: str):
         f.write(raw)
 
 
+def get_usd_buying_power(trade_client, account_id: str) -> float:
+    try:
+        res = trade_client.account_v2.get_account_balance(account_id)
+        if res.status_code != 200:
+            return 0
+        data = res.json()
+        for a in data.get("account_currency_assets", []):
+            if a.get("currency") == "USD":
+                return float(a.get("buying_power", 0))
+        return 0
+    except Exception:
+        return 0
+
+
 def get_positions(trade_client, account_id: str) -> dict:
     res = trade_client.account_v2.get_account_position(account_id)
     if res.status_code != 200:
@@ -76,14 +90,16 @@ def get_positions(trade_client, account_id: str) -> dict:
     positions = {}
     if isinstance(data, list):
         for pos in data:
-            sym = pos.get("ticker", {}).get("symbol", "")
-            qty = float(pos.get("quantity", 0))
+            sym = pos.get("symbol") or pos.get("ticker", {}).get("symbol", "")
+            qty_raw = pos.get("quantity", "0")
+            qty = float(qty_raw) if qty_raw else 0
             if sym and qty > 0:
                 positions[sym] = qty
     elif isinstance(data, dict):
         for item in data.get("data", []):
-            sym = item.get("ticker", {}).get("symbol", "")
-            qty = float(item.get("quantity", 0))
+            sym = item.get("symbol") or item.get("ticker", {}).get("symbol", "")
+            qty_raw = item.get("quantity", "0")
+            qty = float(qty_raw) if qty_raw else 0
             if sym and qty > 0:
                 positions[sym] = qty
     return positions
@@ -96,7 +112,7 @@ def place_order(trade_client, account_id: str, symbol: str, side: str, quantity:
         "instrument_type": "EQUITY",
         "market": "US",
         "order_type": "MARKET",
-        "quantity": str(quantity),
+        "quantity": quantity,
         "side": side,
         "time_in_force": "DAY",
         "entrust_type": "QTY",
@@ -230,12 +246,26 @@ def main():
                 results["failed"].append({"symbol": symbol, "action": "SELL", "error": resp})
                 print(f"    ✗ 卖出 {symbol} 失败: {resp}")
 
+        usd_bp = get_usd_buying_power(trade_client, account_id)
+        print(f"    💵 USD 购买力: ${usd_bp:,.2f}")
+
         initial_cash_per_stock = 2000
         for symbol in actual_buy:
             price = _price_from_strategy(strategy, symbol)
             if price <= 0:
                 price = 200
-            qty = max(1, int(initial_cash_per_stock / price))
+            qty = int(initial_cash_per_stock / price)
+            if qty == 0:
+                print(f"    ⚠️ 跳过 {symbol}: ${price:.0f} > ${initial_cash_per_stock}, 买不起1股")
+                results["failed"].append({"symbol": symbol, "action": "BUY",
+                                          "error": "Price exceeds per-stock budget"})
+                continue
+            estimated = qty * price * 1.05  # 5% buffer for market order slippage
+            if estimated > usd_bp:
+                print(f"    ⚠️ 跳过 {symbol}: 预计 ${estimated:.0f} > 购买力 ${usd_bp:.0f}")
+                results["failed"].append({"symbol": symbol, "action": "BUY",
+                                          "error": "Insufficient BP"})
+                continue
             print(f"    → 买入 {symbol} x{qty} (~${price:.2f})")
             ok, resp = place_order(trade_client, account_id, symbol, "BUY", qty)
             if ok:
@@ -253,16 +283,33 @@ def main():
     for s in webull_positions:
         if s not in actual_sell:
             new_positions[s] = webull_positions[s]
+
+    actual_buy_cost = 0
     for s in actual_buy:
         price = _price_from_strategy(strategy, s)
         if price <= 0:
             price = 200
-        new_positions[s] = max(1, int(2000 / price))
+        qty = int(2000 / price)
+        if qty == 0:
+            continue
+        new_positions[s] = qty
+        actual_buy_cost += qty * price
 
     from src.strategy import load_last_positions
     pos_state = load_last_positions()
-    pos_state["positions"] = new_positions
-    pos_state["cash"] = strategy.get("cash_available", 20000 - len(results["bought"]) * 2000)
+
+    # Prefer Webull live data after all orders are placed
+    if not paper:
+        live_pos = get_positions(trade_client, account_id)
+        if live_pos:
+            pos_state["positions"] = live_pos
+        live_bp = get_usd_buying_power(trade_client, account_id)
+        if live_bp > 0:
+            pos_state["cash"] = live_bp
+    else:
+        pos_state["positions"] = new_positions
+        pos_state["cash"] = strategy.get("cash_available", 0) - actual_buy_cost
+
     pos_state["spy_mode"] = strategy.get("spy_mode", False)
     pos_state["peak_value"] = strategy.get("peak_value", 20000)
     pos_state["weeks_since_stock_entry"] = 0 if not strategy.get("spy_mode") else 999
@@ -281,11 +328,11 @@ def main():
     ]
     if results["bought"]:
         lines.append(f"📗 <b>已买入</b> ({len(results['bought'])}):")
-        lines.append(f"  {', '.join(results['bought'][:8])}")
+        lines.append(f"  {', '.join(results['bought'])}")
         lines.append("")
     if results["sold"]:
         lines.append(f"📕 <b>已卖出</b> ({len(results['sold'])}):")
-        lines.append(f"  {', '.join(results['sold'][:8])}")
+        lines.append(f"  {', '.join(results['sold'])}")
         lines.append("")
     if results["failed"]:
         lines.append(f"❌ <b>失败</b> ({len(results['failed'])}):")

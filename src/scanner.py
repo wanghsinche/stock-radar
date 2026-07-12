@@ -31,7 +31,7 @@ def qualify_20day_highs(
     If the max close in that window falls in the most recent 5 days → qualifies.
     Returns list of {symbol, name, ret_20d, close, high_date} sorted by ret_20d desc.
     """
-    if len(close) < 20:
+    if len(close) < 21:
         return []
 
     window = close.tail(20)

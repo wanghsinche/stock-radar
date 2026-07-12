@@ -188,15 +188,9 @@ def main():
         # Normal stock mode
         sell_list = sorted(held_symbols - top20_set)
         # Determine n_buy based on qualifier count
-        min_qualify_full = buy_top
         min_qualify_half = 15
-        min_qualify_cash = 5
-        if n_qual < min_qualify_cash:
+        if n_qual < min_qualify_half:
             n_buy = 0
-        elif n_qual < min_qualify_half:
-            n_buy = buy_top // 2
-        elif n_qual < min_qualify_full:
-            n_buy = buy_top
         else:
             n_buy = buy_top
 

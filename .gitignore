@@ -4,6 +4,7 @@ __pycache__/
 logs/
 *.log
 .env
+config.yaml
 config_local.yaml
 reports/
 data/

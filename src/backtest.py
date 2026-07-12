@@ -53,10 +53,15 @@ def _load_data(symbols, years=5):
         auto_adjust=True,
     )
     close = data["Close"].dropna(axis=1, how="all")
+    open_prices = data["Open"].dropna(axis=1, how="all")
     if isinstance(close.columns, pd.MultiIndex):
         close = close.droplevel(0, axis=1)
+        open_prices = open_prices.droplevel(0, axis=1)
+    common = close.columns.intersection(open_prices.columns)
+    close = close[common]
+    open_prices = open_prices[common]
     print(f"  Range: {close.index[0].date()} → {close.index[-1].date()}  ({len(close)} days)")
-    return close
+    return close, open_prices
 
 
 def detect_bull_bear_windows(close, window=120):
@@ -112,11 +117,11 @@ def qualify_at_date(close, symbols, idx):
     return results
 
 
-def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
+def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_date=None,
                  top_n=20, buy_top=10, initial_cash_per_stock=2000,
                  min_qualify_full=None, min_qualify_half=15, min_qualify_cash=5,
                  dd_switch_to_spy=0.15, reentry_min_qual=30, reentry_spy_ma=50,
-                 spy_cooldown_weeks=4):
+                 spy_cooldown_weeks=4, slippage=0.001):
     if min_qualify_full is None:
         min_qualify_full = buy_top
     if start_date is None:
@@ -167,7 +172,7 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
 
         buy_list = [s for s, _ in top20[:n_buy]] if n_buy > 0 else []
 
-        # --- compute current holdings value & drawdown ---
+        # --- compute current holdings value & drawdown (MTM at Friday close) ---
         h_val = spy_shares * spy_price if spy_mode else sum(
             positions[s] * close.iloc[idx][s]
             for s in positions if pd.notna(close.iloc[idx][s]))
@@ -178,23 +183,38 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
 
         trading_mode = "stocks"
 
+        # --- execution price: next trading day open + slippage ---
+        exec_idx = min(idx + 1, len(close) - 1)
+        exec_date = close.index[exec_idx]
+
+        def _exec_price(sym, is_buy):
+            p = open_prices.iloc[exec_idx][sym]
+            if pd.isna(p) or p <= 0:
+                p = close.iloc[idx][sym]
+            if pd.isna(p) or p <= 0:
+                return None
+            multi = 1 + slippage if is_buy else 1 - slippage
+            return p * multi
+
         # --- SPY mode entry (drawdown protection, with cooldown) ---
         if not spy_mode and dd_from_peak < -dd_switch_to_spy and weeks_since_stock_entry >= spy_cooldown_weeks:
             for sym in list(positions.keys()):
-                p = close.iloc[idx][sym]
-                if pd.notna(p) and p > 0:
+                p = _exec_price(sym, is_buy=False)
+                if p is not None and p > 0:
                     proceeds = positions[sym] * p
                     cash += proceeds
-                    trade_log.append({"date": friday, "action": "SELL", "symbol": sym,
+                    trade_log.append({"date": exec_date, "action": "SELL", "symbol": sym,
                                       "price": p, "qty": positions[sym], "value": proceeds})
                     if sym in buy_dates:
-                        hold_periods.append(int((friday - buy_dates[sym]).days / 7))
+                        hold_periods.append(int((exec_date - buy_dates[sym]).days / 7))
                         del buy_dates[sym]
                     del positions[sym]
-            spy_shares = int(cash / spy_price)
-            cash -= spy_shares * spy_price
-            trade_log.append({"date": friday, "action": "BUY_SPY", "symbol": "SPY",
-                              "price": spy_price, "qty": spy_shares, "value": spy_shares * spy_price})
+            spy_p = _exec_price("SPY", is_buy=True)
+            if spy_p is not None and spy_p > 0:
+                spy_shares = int(cash / spy_p)
+                cash -= spy_shares * spy_p
+                trade_log.append({"date": exec_date, "action": "BUY_SPY", "symbol": "SPY",
+                                  "price": spy_p, "qty": spy_shares, "value": spy_shares * spy_p})
             spy_mode = True
             weeks_since_stock_entry = 999
             h_val = spy_shares * spy_price
@@ -205,10 +225,12 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
         if spy_mode:
             spy_above_ma = friday in spy_sma.index and spy_price > spy_sma.loc[friday]
             if n_qual >= reentry_min_qual and spy_above_ma:
-                proceeds = spy_shares * spy_price
-                cash += proceeds
-                trade_log.append({"date": friday, "action": "SELL_SPY", "symbol": "SPY",
-                                  "price": spy_price, "qty": spy_shares, "value": proceeds})
+                spy_p = _exec_price("SPY", is_buy=False)
+                if spy_p is not None and spy_p > 0:
+                    proceeds = spy_shares * spy_p
+                    cash += proceeds
+                    trade_log.append({"date": exec_date, "action": "SELL_SPY", "symbol": "SPY",
+                                      "price": spy_p, "qty": spy_shares, "value": proceeds})
                 spy_shares = 0.0
                 spy_mode = False
                 weeks_since_stock_entry = 0
@@ -219,21 +241,21 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
         if not spy_mode:
             for sym in list(positions.keys()):
                 if sym not in top20_set:
-                    p = close.iloc[idx][sym]
-                    if pd.notna(p) and p > 0:
+                    p = _exec_price(sym, is_buy=False)
+                    if p is not None and p > 0:
                         proceeds = positions[sym] * p
                         cash += proceeds
-                        trade_log.append({"date": friday, "action": "SELL", "symbol": sym,
+                        trade_log.append({"date": exec_date, "action": "SELL", "symbol": sym,
                                           "price": p, "qty": positions[sym], "value": proceeds})
                         if sym in buy_dates:
-                            hold_periods.append(int((friday - buy_dates[sym]).days / 7))
+                            hold_periods.append(int((exec_date - buy_dates[sym]).days / 7))
                             del buy_dates[sym]
                         del positions[sym]
 
             for sym in buy_list:
                 if sym not in positions and cash >= initial_cash_per_stock:
-                    p = close.iloc[idx][sym]
-                    if pd.notna(p) and p > 0:
+                    p = _exec_price(sym, is_buy=True)
+                    if p is not None and p > 0:
                         shares = int(initial_cash_per_stock / p)
                         if shares == 0:
                             continue
@@ -241,9 +263,9 @@ def run_backtest(close, symbols, name_map, start_date=None, end_date=None,
                         if cash < cost:
                             continue
                         positions[sym] = shares
-                        buy_dates[sym] = friday
+                        buy_dates[sym] = exec_date
                         cash -= cost
-                        trade_log.append({"date": friday, "action": "BUY", "symbol": sym,
+                        trade_log.append({"date": exec_date, "action": "BUY", "symbol": sym,
                                           "price": p, "qty": shares, "value": cost})
 
             h_val = sum(positions[s] * close.iloc[idx][s]
@@ -401,7 +423,7 @@ def run_all_periods(top_n=20, buy_top=10, years=5, initial_cash_per_stock=2000):
     constituents = fetch_sp500_constituents()
     symbols = constituents["Symbol"].tolist()
     name_map = dict(zip(constituents["Symbol"], constituents["Security"]))
-    close = _load_data(symbols, years)
+    close, open_prices = _load_data(symbols, years)
     avail = [s for s in symbols if s in close.columns]
 
     bull_window, bear_window = detect_bull_bear_windows(close)
@@ -423,7 +445,7 @@ def run_all_periods(top_n=20, buy_top=10, years=5, initial_cash_per_stock=2000):
 
     for key, label, sd, ed in periods:
         print(f"\n  ▶ {label}")
-        result = run_backtest(close, avail, name_map, start_date=sd, end_date=ed,
+        result = run_backtest(close, open_prices, avail, name_map, start_date=sd, end_date=ed,
                               top_n=top_n, buy_top=buy_top,
                               initial_cash_per_stock=initial_cash_per_stock,
                               min_qualify_full=buy_top, min_qualify_half=15, min_qualify_cash=5,

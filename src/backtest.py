@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.scanner import fetch_sp500_constituents
 from src.scanner import qualify_20day_highs
+from src.trading import calc_buy_count
 
 _FONT_PATH = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
 if os.path.exists(_FONT_PATH):
@@ -119,11 +120,8 @@ def qualify_at_date(close, symbols, idx):
 
 def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_date=None,
                  top_n=20, buy_top=10, initial_cash_per_stock=2000,
-                 min_qualify_full=None, min_qualify_half=15, min_qualify_cash=5,
                  dd_switch_to_spy=0.15, reentry_min_qual=30, reentry_spy_ma=50,
                  spy_cooldown_weeks=4, slippage=0.001):
-    if min_qualify_full is None:
-        min_qualify_full = buy_top
     if start_date is None:
         start_date = close.index[0]
     if end_date is None:
@@ -163,12 +161,7 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
         top20_set = {s for s, _ in top20}
         n_qual = len(top20)
 
-        if n_qual < min_qualify_half:
-            n_buy = 0
-        elif n_qual < min_qualify_full:
-            n_buy = buy_top // 2
-        else:
-            n_buy = buy_top
+        n_buy = calc_buy_count(n_qual, buy_top)
 
         buy_list = [s for s, _ in top20[:n_buy]] if n_buy > 0 else []
 
@@ -448,8 +441,7 @@ def run_all_periods(top_n=20, buy_top=10, years=5, initial_cash_per_stock=2000):
         result = run_backtest(close, open_prices, avail, name_map, start_date=sd, end_date=ed,
                               top_n=top_n, buy_top=buy_top,
                               initial_cash_per_stock=initial_cash_per_stock,
-                              min_qualify_full=buy_top, min_qualify_half=15, min_qualify_cash=5,
-                               dd_switch_to_spy=0.15, reentry_min_qual=30, reentry_spy_ma=50)
+                              dd_switch_to_spy=0.15, reentry_min_qual=30, reentry_spy_ma=50)
         if result is None:
             print("  ⚠️ 数据不足")
             continue

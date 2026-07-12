@@ -21,6 +21,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.scanner import fetch_sp500_constituents, qualify_20day_highs
 from src.notifier import send_telegram, format_message
+from src.trading import calc_buy_count
 
 _DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 _LAST_POS = os.path.join(_DATA_DIR, "last_positions.json")
@@ -187,12 +188,7 @@ def main():
     else:
         # Normal stock mode
         sell_list = sorted(held_symbols - top20_set)
-        # Determine n_buy based on qualifier count
-        min_qualify_half = 15
-        if n_qual < min_qualify_half:
-            n_buy = 0
-        else:
-            n_buy = buy_top
+        n_buy = calc_buy_count(n_qual, buy_top)
 
         new_buy_candidates = [s for s in top10 if s not in held_symbols]
         buy_list = new_buy_candidates[:n_buy]

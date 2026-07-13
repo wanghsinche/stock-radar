@@ -19,7 +19,16 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.scanner import fetch_sp500_constituents
 from src.scanner import qualify_20day_highs
-from src.trading import calc_buy_count
+from src.trading import (
+    calc_buy_count,
+    calc_sell_list,
+    is_spy_entry_trigger,
+    is_spy_exit_trigger,
+    increment_cooldown,
+    calc_drawdown,
+    calc_portfolio_value,
+    calc_shares_to_buy,
+)
 
 _FONT_PATH = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
 if os.path.exists(_FONT_PATH):
@@ -166,13 +175,10 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
         buy_list = [s for s, _ in top20[:n_buy]] if n_buy > 0 else []
 
         # --- compute current holdings value & drawdown (MTM at Friday close) ---
-        h_val = spy_shares * spy_price if spy_mode else sum(
-            positions[s] * close.iloc[idx][s]
-            for s in positions if pd.notna(close.iloc[idx][s]))
+        prices = {s: close.iloc[idx][s] for s in positions if pd.notna(close.iloc[idx][s])}
+        h_val = calc_portfolio_value(0, positions, prices, spy_mode, spy_shares, spy_price)
         port_value = cash + h_val
-        if port_value > peak_port_value:
-            peak_port_value = port_value
-        dd_from_peak = port_value / peak_port_value - 1
+        peak_port_value, dd_from_peak = calc_drawdown(port_value, peak_port_value)
 
         trading_mode = "stocks"
 
@@ -190,7 +196,8 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
             return p * multi
 
         # --- SPY mode entry (drawdown protection, with cooldown) ---
-        if not spy_mode and dd_from_peak < -dd_switch_to_spy and weeks_since_stock_entry >= spy_cooldown_weeks:
+        if is_spy_entry_trigger(spy_mode, dd_from_peak, weeks_since_stock_entry,
+                                dd_switch_to_spy, spy_cooldown_weeks):
             for sym in list(positions.keys()):
                 p = _exec_price(sym, is_buy=False)
                 if p is not None and p > 0:
@@ -204,7 +211,7 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
                     del positions[sym]
             spy_p = _exec_price("SPY", is_buy=True)
             if spy_p is not None and spy_p > 0:
-                spy_shares = int(cash / spy_p)
+                spy_shares = calc_shares_to_buy(spy_p, cash)
                 cash -= spy_shares * spy_p
                 trade_log.append({"date": exec_date, "action": "BUY_SPY", "symbol": "SPY",
                                   "price": spy_p, "qty": spy_shares, "value": spy_shares * spy_p})
@@ -217,7 +224,7 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
         # --- SPY mode exit (re-entry to stocks) ---
         if spy_mode:
             spy_above_ma = friday in spy_sma.index and spy_price > spy_sma.loc[friday]
-            if n_qual >= reentry_min_qual and spy_above_ma:
+            if is_spy_exit_trigger(spy_mode, n_qual, spy_price, spy_above_ma, reentry_min_qual):
                 spy_p = _exec_price("SPY", is_buy=False)
                 if spy_p is not None and spy_p > 0:
                     proceeds = spy_shares * spy_p
@@ -232,8 +239,8 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
 
         # --- normal stock trading (when NOT in SPY mode) ---
         if not spy_mode:
-            for sym in list(positions.keys()):
-                if sym not in top20_set:
+            sell_syms = calc_sell_list(set(positions.keys()), top20_set)
+            for sym in sell_syms:
                     p = _exec_price(sym, is_buy=False)
                     if p is not None and p > 0:
                         proceeds = positions[sym] * p
@@ -249,7 +256,7 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
                 if sym not in positions and cash >= initial_cash_per_stock:
                     p = _exec_price(sym, is_buy=True)
                     if p is not None and p > 0:
-                        shares = int(initial_cash_per_stock / p)
+                        shares = calc_shares_to_buy(p, initial_cash_per_stock)
                         if shares == 0:
                             continue
                         cost = shares * p
@@ -261,12 +268,11 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
                         trade_log.append({"date": exec_date, "action": "BUY", "symbol": sym,
                                           "price": p, "qty": shares, "value": cost})
 
-            h_val = sum(positions[s] * close.iloc[idx][s]
-                        for s in positions if pd.notna(close.iloc[idx][s]))
+            prices = {s: close.iloc[idx][s] for s in positions if pd.notna(close.iloc[idx][s])}
+            h_val = calc_portfolio_value(0, positions, prices)
             port_value = cash + h_val
 
-        if not spy_mode and weeks_since_stock_entry < 999:
-            weeks_since_stock_entry += 1
+        weeks_since_stock_entry = increment_cooldown(spy_mode, weeks_since_stock_entry)
 
         # --- record ---
         if prev_friday is None:

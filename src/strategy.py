@@ -21,7 +21,17 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.scanner import fetch_sp500_constituents, qualify_20day_highs
 from src.notifier import send_telegram, format_message
-from src.trading import calc_buy_count
+from src.trading import (
+    calc_buy_count,
+    calc_sell_list,
+    is_spy_entry_trigger,
+    is_spy_exit_trigger,
+    increment_cooldown,
+    calc_drawdown,
+    calc_portfolio_value,
+    calc_shares_to_buy,
+    DEFAULT_PARAMS,
+)
 
 _DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 _LAST_POS = os.path.join(_DATA_DIR, "last_positions.json")
@@ -128,24 +138,18 @@ def main():
     peak_value = last.get("peak_value", 20000)
 
     # 5. Compute current value (approximate using latest close prices)
-    current_val = last.get("cash", 20000)
+    prices = {}
     for sym, shares in last.get("positions", {}).items():
         if sym in close.columns:
             price = close[sym].iloc[-1]
             if pd.notna(price):
-                current_val += shares * price
+                prices[sym] = price
+    current_val = calc_portfolio_value(last.get("cash", 20000), last.get("positions", {}), prices)
 
-    if current_val > peak_value:
-        peak_value = current_val
-
-    dd_from_peak = current_val / peak_value - 1
+    peak_value, dd_from_peak = calc_drawdown(current_val, peak_value)
 
     # 6. Determine mode
     spy_mode = last_spy_mode
-    dd_switch_to_spy = 0.15
-    reentry_min_qual = 30
-    reentry_spy_ma = 50
-    spy_cooldown_weeks = 4
     weeks_since_stock_entry = last.get("weeks_since_stock_entry", 999)
 
     # Try to get SPY price
@@ -162,32 +166,28 @@ def main():
         spy_price = spy_sma50 = None
 
     mode_reason = ""
-    if not spy_mode and dd_from_peak < -dd_switch_to_spy and weeks_since_stock_entry >= spy_cooldown_weeks:
+    if is_spy_entry_trigger(spy_mode, dd_from_peak, weeks_since_stock_entry):
         spy_mode = True
         weeks_since_stock_entry = 999
         mode_reason = f"回撤 {dd_from_peak*100:.1f}% > 15%, 切换到 SPY"
+    elif is_spy_exit_trigger(spy_mode, n_qual, spy_price, spy_sma50):
+        spy_mode = False
+        weeks_since_stock_entry = 0
+        mode_reason = f"合格数 {n_qual} ≥ 30 且 SPY > 50MA, 转回股票"
     elif spy_mode:
         spy_above_ma = spy_sma50 is not None and spy_price is not None and spy_price > spy_sma50
-        if n_qual >= reentry_min_qual and spy_above_ma:
-            spy_mode = False
-            weeks_since_stock_entry = 0
-            mode_reason = f"合格数 {n_qual} ≥ 30 且 SPY > 50MA, 转回股票"
-        else:
-            mode_reason = f"SPY 模式中 (合格数 {n_qual}, SPY > 50MA: {spy_above_ma if spy_price else 'N/A'})"
+        mode_reason = f"SPY 模式中 (合格数 {n_qual}, SPY > 50MA: {spy_above_ma if spy_price else 'N/A'})"
 
-    if not spy_mode and weeks_since_stock_entry < 999:
-        weeks_since_stock_entry += 1
+    weeks_since_stock_entry = increment_cooldown(spy_mode, weeks_since_stock_entry)
 
     # 7. Determine buy/sell/hold lists
     if spy_mode:
-        # If switching TO spy: sell all stocks, buy SPY
         sell_list = sorted(held_symbols)
         buy_list = []
         hold_list = []
         strategy_name = "spy"
     else:
-        # Normal stock mode
-        sell_list = sorted(held_symbols - top20_set)
+        sell_list = calc_sell_list(held_symbols, top20_set)
         n_buy = calc_buy_count(n_qual, buy_top)
 
         new_buy_candidates = [s for s in top10 if s not in held_symbols]
@@ -202,15 +202,12 @@ def main():
             p = close[s].iloc[-1] if s in close.columns else 0
             cash_available += last["positions"][s] * p if pd.notna(p) else 0
 
-    def _shares(price):
-        return int(initial_cash_per_stock / price) if price > 0 else 0
-
     remaining = cash_available
     can_buy_n = 0
     for sym in buy_list:
         p = close[sym].iloc[-1] if sym in close.columns else 0
         if pd.notna(p) and p > 0:
-            n = _shares(p)
+            n = calc_shares_to_buy(p, initial_cash_per_stock)
             if n == 0:
                 continue
             cost = n * p

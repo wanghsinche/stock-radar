@@ -182,12 +182,13 @@ def main():
             print(f"  {msg}")
             _tg_push(msg)
             return
-        if strategy.get("execution_date") != date_str:
-            msg = (f"⚠️ <b>策略日期不匹配</b>: 策略执行日 {strategy.get('execution_date')}, "
-                   f"今天 {date_str}，跳过")
-            print(f"  {msg}")
-            _tg_push(msg)
-            return
+    # 无论策略从哪个文件加载，都必须校验执行日匹配
+    if strategy.get("execution_date") != date_str:
+        msg = (f"⚠️ <b>策略日期不匹配</b>: 策略执行日 {strategy.get('execution_date')}, "
+               f"今天 {date_str}，跳过")
+        print(f"  {msg}")
+        _tg_push(msg)
+        return
 
     print(f"  ✓ 加载策略: mode={strategy['mode']}, buy={len(strategy['buy_list'])}, "
           f"sell={len(strategy['sell_list'])}, hold={len(strategy['hold_list'])}")
@@ -298,17 +299,26 @@ def main():
     from src.strategy import load_last_positions
     pos_state = load_last_positions()
 
-    # Prefer Webull live data after all orders are placed
-    if not paper:
-        live_pos = get_positions(trade_client, account_id)
-        if live_pos:
-            pos_state["positions"] = live_pos
-        live_bp = get_usd_buying_power(trade_client, account_id)
-        if live_bp > 0:
-            pos_state["cash"] = live_bp
-    else:
+    try:
+        if not paper:
+            live_pos = get_positions(trade_client, account_id)
+            if live_pos:
+                pos_state["positions"] = live_pos
+            else:
+                # Fallback: use estimated positions
+                pos_state["positions"] = new_positions
+            live_bp = get_usd_buying_power(trade_client, account_id)
+            if live_bp > 0:
+                pos_state["cash"] = live_bp
+        else:
+            pos_state["positions"] = new_positions
+            pos_state["cash"] = strategy.get("cash_available", 0) - actual_buy_cost
+    except Exception as e:
+        # Fallback on error: use estimated positions
+        print(f"  ⚠️ 获取实时持仓失败 ({e})，使用估算数据")
         pos_state["positions"] = new_positions
-        pos_state["cash"] = strategy.get("cash_available", 0) - actual_buy_cost
+        if paper:
+            pos_state["cash"] = strategy.get("cash_available", 0) - actual_buy_cost
 
     pos_state["spy_mode"] = strategy.get("spy_mode", False)
     pos_state["peak_value"] = strategy.get("peak_value", 20000)

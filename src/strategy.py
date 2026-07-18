@@ -11,13 +11,15 @@
 import json
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pandas as pd
 import yaml
 from dotenv import load_dotenv
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+BEIJING = timezone(timedelta(hours=8))
 
 from src.scanner import fetch_sp500_constituents, qualify_20day_highs
 from src.notifier import send_telegram, format_message
@@ -94,8 +96,9 @@ def main():
     buy_top = 10
     initial_cash_per_stock = 2000
 
+    beijing_now = datetime.now(BEIJING)
     print(f"\n{'=' * 60}")
-    print(f"  🧠 SP500 20日新高 — 策略生成 {datetime.today().strftime('%Y-%m-%d')}")
+    print(f"  🧠 SP500 20日新高 — 策略生成 {beijing_now.strftime('%Y-%m-%d')}")
     print(f"{'=' * 60}")
 
     # 1. Fetch SP500 + data
@@ -103,7 +106,7 @@ def main():
     symbols = constituents["Symbol"].tolist()
     name_map = dict(zip(constituents["Symbol"], constituents["Security"]))
 
-    end = datetime.today()
+    end = beijing_now
     start = end - timedelta(days=60)
     print(f"  Downloading {len(symbols)} tickers...")
     import yfinance as yf
@@ -223,9 +226,8 @@ def main():
                 can_buy_n += 1
 
     # 9. Build strategy JSON
-    now = datetime.now()
-    next_monday = now + timedelta(days=(7 - now.weekday()) % 7 or 7)
-    date_str = now.strftime("%Y-%m-%d")
+    next_monday = beijing_now + timedelta(days=(7 - beijing_now.weekday()) % 7 or 7)
+    date_str = beijing_now.strftime("%Y-%m-%d")
     exec_date = next_monday.strftime("%Y-%m-%d")
 
     strategy = {

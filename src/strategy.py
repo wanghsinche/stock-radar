@@ -38,6 +38,7 @@ from src.trading import (
 _DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 _LAST_POS = os.path.join(_DATA_DIR, "last_positions.json")
 _TRADE_LOG = os.path.join(_DATA_DIR, "trade_log.json")
+_PERF_HISTORY = os.path.join(_DATA_DIR, "performance_history.json")
 
 
 def load_config():
@@ -71,6 +72,70 @@ def save_trade_log(log: list):
     os.makedirs(_DATA_DIR, exist_ok=True)
     with open(_TRADE_LOG, "w") as f:
         json.dump(log, f, indent=2, default=str)
+
+
+def load_perf_history() -> list:
+    if not os.path.exists(_PERF_HISTORY):
+        return []
+    with open(_PERF_HISTORY) as f:
+        return json.load(f)
+
+
+def save_perf_history(history: list):
+    os.makedirs(_DATA_DIR, exist_ok=True)
+    with open(_PERF_HISTORY, "w") as f:
+        json.dump(history, f, indent=2, default=str)
+
+
+def update_risk_alert(date_str: str, portfolio_value: float, spy_price: float | None, n_qual: int, dd_from_peak: float) -> dict:
+    history = [h for h in load_perf_history() if h.get("date") != date_str]
+    row = {
+        "date": date_str,
+        "portfolio_value": round(portfolio_value, 2),
+        "spy_price": round(float(spy_price), 4) if spy_price is not None and pd.notna(spy_price) else None,
+        "n_qualified": n_qual,
+        "drawdown_pct": round(dd_from_peak * 100, 2),
+    }
+    history.append(row)
+    history = sorted(history, key=lambda x: x["date"])[-104:]
+    save_perf_history(history)
+
+    alert = {
+        "enabled": False,
+        "status": "insufficient_history",
+        "message": "相对强弱历史不足",
+        "relative_strength": None,
+        "relative_strength_ma13": None,
+        "underperform_spy_13w": None,
+        "n_qualified": n_qual,
+        "drawdown_pct": round(dd_from_peak * 100, 2),
+    }
+    valid = [h for h in history if h.get("portfolio_value") and h.get("spy_price")]
+    if len(valid) < 13:
+        return alert
+
+    latest = valid[-1]
+    rs_values = [h["portfolio_value"] / h["spy_price"] for h in valid[-13:]]
+    rs = latest["portfolio_value"] / latest["spy_price"]
+    rs_ma13 = sum(rs_values) / len(rs_values)
+    past = valid[-13]
+    strategy_13w = latest["portfolio_value"] / past["portfolio_value"] - 1
+    spy_13w = latest["spy_price"] / past["spy_price"] - 1
+    weak_rs = rs < rs_ma13
+    underperform = strategy_13w < spy_13w
+    risk_on = weak_rs and underperform
+
+    alert.update({
+        "enabled": risk_on,
+        "status": "risk_on" if risk_on else "normal",
+        "message": "动量策略相对 SPY 转弱" if risk_on else "相对强弱正常",
+        "relative_strength": round(rs, 4),
+        "relative_strength_ma13": round(rs_ma13, 4),
+        "strategy_13w_pct": round(strategy_13w * 100, 2),
+        "spy_13w_pct": round(spy_13w * 100, 2),
+        "underperform_spy_13w": underperform,
+    })
+    return alert
 
 
 def load_strategy(date_str: str = None) -> dict:
@@ -236,6 +301,7 @@ def main():
     next_monday = beijing_now + timedelta(days=(7 - beijing_now.weekday()) % 7 or 7)
     date_str = beijing_now.strftime("%Y-%m-%d")
     exec_date = next_monday.strftime("%Y-%m-%d")
+    risk_alert = update_risk_alert(date_str, current_val, spy_price, n_qual, dd_from_peak)
 
     strategy = {
         "generated_at": date_str,
@@ -257,6 +323,7 @@ def main():
         "peak_value": round(peak_value, 2),
         "drawdown_pct": round(dd_from_peak * 100, 2),
         "spy_mode": spy_mode,
+        "risk_alert": risk_alert,
     }
 
     # 10. Save
@@ -293,8 +360,18 @@ def _format_strategy_msg(strategy: dict, name_map: dict) -> str:
         f"💰 组合: ${strategy['portfolio_value']:,.0f}  (回撤 {strategy['drawdown_pct']:+.2f}%)",
         f"📊 模式: <b>{strategy['mode'].upper()}</b>  — {strategy['reason']}",
         f"🎯 合格数: {strategy['n_qualified']}",
-        "",
     ]
+
+    alert = strategy.get("risk_alert", {})
+    if alert:
+        icon = "⚠️" if alert.get("enabled") else "✅"
+        lines.append(f"{icon} 风险: {alert.get('message', 'N/A')}")
+        if alert.get("relative_strength") is not None:
+            lines.append(
+                f"   RS {alert['relative_strength']:.4f} / MA13 {alert['relative_strength_ma13']:.4f}; "
+                f"13周 策略 {alert['strategy_13w_pct']:+.2f}% vs SPY {alert['spy_13w_pct']:+.2f}%"
+            )
+    lines.append("")
 
     if strategy["buy_list"]:
         lines.append("📗 <b>买入</b>")

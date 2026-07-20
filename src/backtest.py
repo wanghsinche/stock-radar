@@ -159,6 +159,8 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
     hold_periods: list[int] = []
     prev_friday = None
     prev_port_value = None
+    position_budget = initial_cash_per_stock
+    budget_year = None
 
     for friday in dates:
         if friday not in friday_to_next:
@@ -179,6 +181,9 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
         h_val = calc_portfolio_value(0, positions, prices, spy_mode, spy_shares, spy_price)
         port_value = cash + h_val
         peak_port_value, dd_from_peak = calc_drawdown(port_value, peak_port_value)
+        if budget_year != friday.year:
+            position_budget = max(1, int(port_value / buy_top))
+            budget_year = friday.year
 
         trading_mode = "stocks"
 
@@ -263,10 +268,10 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
                         del positions[sym]
 
             for sym in buy_list:
-                if sym not in positions and cash >= initial_cash_per_stock:
+                if sym not in positions and cash >= position_budget:
                     p = _exec_price(sym, is_buy=True)
                     if p is not None and p > 0:
-                        shares = calc_shares_to_buy(p, initial_cash_per_stock)
+                        shares = calc_shares_to_buy(p, position_budget)
                         if shares == 0:
                             continue
                         cost = shares * p
@@ -305,6 +310,7 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
             "n_qualifiers": n_qual,
             "n_positions": len(positions),
             "n_buy": n_buy,
+            "position_budget": position_budget,
             "spy_mode": spy_mode,
             "trading_mode": trading_mode,
         })

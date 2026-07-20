@@ -253,14 +253,14 @@ def main():
         usd_bp = get_usd_buying_power(trade_client, account_id)
         print(f"    💵 USD 购买力: ${usd_bp:,.2f}")
 
-        initial_cash_per_stock = 2000
+        position_budget = strategy.get("position_budget", 2000)
         for symbol in actual_buy:
             price = _price_from_strategy(strategy, symbol)
             if price <= 0:
                 price = 200
-            qty = int(initial_cash_per_stock / price)
+            qty = int(position_budget / price)
             if qty == 0:
-                print(f"    ⚠️ 跳过 {symbol}: ${price:.0f} > ${initial_cash_per_stock}, 买不起1股")
+                print(f"    ⚠️ 跳过 {symbol}: ${price:.0f} > ${position_budget}, 买不起1股")
                 results["failed"].append({"symbol": symbol, "action": "BUY",
                                           "error": "Price exceeds per-stock budget"})
                 continue
@@ -288,12 +288,13 @@ def main():
         if s not in actual_sell:
             new_positions[s] = webull_positions[s]
 
+    position_budget = strategy.get("position_budget", 2000)
     actual_buy_cost = 0
     for s in actual_buy:
         price = _price_from_strategy(strategy, s)
         if price <= 0:
             price = 200
-        qty = int(2000 / price)
+        qty = int(position_budget / price)
         if qty == 0:
             continue
         new_positions[s] = qty
@@ -324,6 +325,8 @@ def main():
             pos_state["cash"] = strategy.get("cash_available", 0) - actual_buy_cost
 
     pos_state["spy_mode"] = strategy.get("spy_mode", False)
+    pos_state["position_budget"] = strategy.get("position_budget", 2000)
+    pos_state["budget_year"] = strategy.get("budget_year")
     pos_state["peak_value"] = strategy.get("peak_value", 20000)
     pos_state["weeks_since_stock_entry"] = 0 if not strategy.get("spy_mode") else 999
     if not strategy.get("spy_mode"):

@@ -97,6 +97,7 @@ def main():
     initial_cash_per_stock = 2000
 
     beijing_now = datetime.now(BEIJING)
+    current_year = beijing_now.year
     print(f"\n{'=' * 60}")
     print(f"  🧠 SP500 20日新高 — 策略生成 {beijing_now.strftime('%Y-%m-%d')}")
     print(f"{'=' * 60}")
@@ -150,6 +151,10 @@ def main():
     current_val = calc_portfolio_value(last.get("cash", 20000), last.get("positions", {}), prices)
 
     peak_value, dd_from_peak = calc_drawdown(current_val, peak_value)
+    if last.get("budget_year") == current_year:
+        position_budget = last.get("position_budget", initial_cash_per_stock)
+    else:
+        position_budget = max(1, int(current_val / buy_top))
 
     # 6. Determine mode
     spy_mode = last_spy_mode
@@ -212,7 +217,7 @@ def main():
     for sym in buy_list:
         p = close[sym].iloc[-1] if sym in close.columns else 0
         if pd.notna(p) and p > 0:
-            n = calc_shares_to_buy(p, initial_cash_per_stock)
+            n = calc_shares_to_buy(p, position_budget)
             if n == 0:
                 continue
             cost = n * p
@@ -222,7 +227,7 @@ def main():
             else:
                 break
         else:
-            cost = initial_cash_per_stock
+            cost = position_budget
             if remaining >= cost:
                 remaining -= cost
                 can_buy_n += 1
@@ -246,6 +251,8 @@ def main():
         "sell_list": sell_list,
         "hold_list": hold_list,
         "cash_available": round(cash_available, 2),
+        "position_budget": position_budget,
+        "budget_year": current_year,
         "portfolio_value": round(current_val, 2),
         "peak_value": round(peak_value, 2),
         "drawdown_pct": round(dd_from_peak * 100, 2),

@@ -223,8 +223,8 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
 
         # --- SPY mode exit (re-entry to stocks) ---
         if spy_mode:
-            spy_above_ma = friday in spy_sma.index and spy_price > spy_sma.loc[friday]
-            if is_spy_exit_trigger(spy_mode, n_qual, spy_price, spy_above_ma, reentry_min_qual):
+            spy_ma = spy_sma.loc[friday] if friday in spy_sma.index else None
+            if is_spy_exit_trigger(spy_mode, n_qual, spy_price, spy_ma, reentry_min_qual):
                 spy_p = _exec_price("SPY", is_buy=False)
                 if spy_p is not None and spy_p > 0:
                     proceeds = spy_shares * spy_p

@@ -111,7 +111,7 @@ def main():
     print(f"  Downloading {len(symbols)} tickers...")
     import yfinance as yf
     data = yf.download(
-        symbols,
+        list(set(symbols + ["SPY"])),
         start=start.strftime("%Y-%m-%d"),
         end=end.strftime("%Y-%m-%d"),
         progress=False,
@@ -155,18 +155,12 @@ def main():
     spy_mode = last_spy_mode
     weeks_since_stock_entry = last.get("weeks_since_stock_entry", 999)
 
-    # Try to get SPY price
     spy_price = None
-    try:
-        spy_data = yf.download("SPY", start=start.strftime("%Y-%m-%d"),
-                               end=end.strftime("%Y-%m-%d"), progress=False, auto_adjust=True)
-        spy_close = spy_data["Close"]
-        if isinstance(spy_close, pd.DataFrame):
-            spy_close = spy_close.squeeze()
+    spy_sma50 = None
+    if "SPY" in close.columns:
+        spy_close = close["SPY"].dropna()
         spy_price = spy_close.iloc[-1] if len(spy_close) > 0 else None
         spy_sma50 = spy_close.rolling(50).mean().iloc[-1] if len(spy_close) >= 50 else None
-    except Exception:
-        spy_price = spy_sma50 = None
 
     mode_reason = ""
     if is_spy_entry_trigger(spy_mode, dd_from_peak, weeks_since_stock_entry):

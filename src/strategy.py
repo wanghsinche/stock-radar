@@ -163,7 +163,15 @@ def main():
         spy_sma50 = spy_close.rolling(50).mean().iloc[-1] if len(spy_close) >= 50 else None
 
     mode_reason = ""
-    if is_spy_entry_trigger(spy_mode, dd_from_peak, weeks_since_stock_entry):
+    force_rebalance = False
+    spy_entry = is_spy_entry_trigger(spy_mode, dd_from_peak, weeks_since_stock_entry)
+    reentry_ready = is_spy_exit_trigger(True, n_qual, spy_price, spy_sma50)
+    if spy_entry and reentry_ready:
+        spy_mode = False
+        weeks_since_stock_entry = 0
+        force_rebalance = True
+        mode_reason = f"回撤 {dd_from_peak*100:.1f}% > 15%, 但合格数 {n_qual} ≥ 30 且 SPY > 50MA, 跳过 SPY 并强制换仓"
+    elif spy_entry:
         spy_mode = True
         weeks_since_stock_entry = 999
         mode_reason = f"回撤 {dd_from_peak*100:.1f}% > 15%, 切换到 SPY"
@@ -184,13 +192,13 @@ def main():
         hold_list = []
         strategy_name = "spy"
     else:
-        sell_list = calc_sell_list(held_symbols, top20_set)
+        sell_list = sorted(held_symbols) if force_rebalance else calc_sell_list(held_symbols, top20_set)
         n_buy = calc_buy_count(n_qual, buy_top)
 
-        new_buy_candidates = [s for s in top10 if s not in held_symbols]
-        buy_list = new_buy_candidates[:n_buy]
-        hold_list = [s for s in mid10 if s in held_symbols] + [s for s in top10 if s in held_symbols]
-        strategy_name = "stocks"
+        buy_candidates = top10 if force_rebalance else [s for s in top10 if s not in held_symbols]
+        buy_list = buy_candidates[:n_buy]
+        hold_list = [] if force_rebalance else [s for s in mid10 if s in held_symbols] + [s for s in top10 if s in held_symbols]
+        strategy_name = "rebalance" if force_rebalance else "stocks"
 
     # 8. Determine available funds
     cash_available = last.get("cash", 0)

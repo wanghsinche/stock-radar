@@ -212,6 +212,9 @@ def main():
     if strategy["mode"] == "spy":
         actual_sell = list(webull_held)
         actual_buy = ["SPY"] if "SPY" not in webull_held else []
+    elif strategy["mode"] == "rebalance":
+        actual_sell = sorted(strategy_sell & webull_held)
+        actual_buy = list(strategy["buy_list"])
     else:
         actual_sell = sorted(strategy_sell & webull_held)
         actual_buy = [s for s in strategy["buy_list"] if s not in webull_held]

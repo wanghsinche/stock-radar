@@ -195,9 +195,14 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
             multi = 1 + slippage if is_buy else 1 - slippage
             return p * multi
 
+        spy_ma = spy_sma.loc[friday] if friday in spy_sma.index else None
+        spy_entry = is_spy_entry_trigger(spy_mode, dd_from_peak, weeks_since_stock_entry,
+                                         dd_switch_to_spy, spy_cooldown_weeks)
+        spy_exit = is_spy_exit_trigger(spy_mode, n_qual, spy_price, spy_ma, reentry_min_qual)
+        force_rebalance = False
+
         # --- SPY mode entry (drawdown protection, with cooldown) ---
-        if is_spy_entry_trigger(spy_mode, dd_from_peak, weeks_since_stock_entry,
-                                dd_switch_to_spy, spy_cooldown_weeks):
+        if spy_entry:
             for sym in list(positions.keys()):
                 p = _exec_price(sym, is_buy=False)
                 if p is not None and p > 0:
@@ -209,22 +214,27 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
                         hold_periods.append(int((exec_date - buy_dates[sym]).days / 7))
                         del buy_dates[sym]
                     del positions[sym]
-            spy_p = _exec_price("SPY", is_buy=True)
-            if spy_p is not None and spy_p > 0:
-                spy_shares = calc_shares_to_buy(spy_p, cash)
-                cash -= spy_shares * spy_p
-                trade_log.append({"date": exec_date, "action": "BUY_SPY", "symbol": "SPY",
-                                  "price": spy_p, "qty": spy_shares, "value": spy_shares * spy_p})
-            spy_mode = True
-            weeks_since_stock_entry = 999
-            h_val = spy_shares * spy_price
-            port_value = h_val
-            trading_mode = "spy_in"
+            if is_spy_exit_trigger(True, n_qual, spy_price, spy_ma, reentry_min_qual):
+                spy_mode = False
+                weeks_since_stock_entry = 0
+                h_val = 0.0
+                force_rebalance = True
+                trading_mode = "rebalance"
+            else:
+                spy_p = _exec_price("SPY", is_buy=True)
+                if spy_p is not None and spy_p > 0:
+                    spy_shares = calc_shares_to_buy(spy_p, cash)
+                    cash -= spy_shares * spy_p
+                    trade_log.append({"date": exec_date, "action": "BUY_SPY", "symbol": "SPY",
+                                      "price": spy_p, "qty": spy_shares, "value": spy_shares * spy_p})
+                spy_mode = True
+                weeks_since_stock_entry = 999
+                h_val = spy_shares * spy_price
+                port_value = h_val
+                trading_mode = "spy_in"
 
         # --- SPY mode exit (re-entry to stocks) ---
-        if spy_mode:
-            spy_ma = spy_sma.loc[friday] if friday in spy_sma.index else None
-            if is_spy_exit_trigger(spy_mode, n_qual, spy_price, spy_ma, reentry_min_qual):
+        if not spy_entry and spy_exit:
                 spy_p = _exec_price("SPY", is_buy=False)
                 if spy_p is not None and spy_p > 0:
                     proceeds = spy_shares * spy_p

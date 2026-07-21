@@ -37,6 +37,8 @@ if os.path.exists(_FONT_PATH):
     plt.rcParams["axes.unicode_minus"] = False
 
 _OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "reports", "backtest")
+_RANK_WINDOW = 120
+_WARMUP_DAYS = 260
 
 
 def _fmt_pct(v):
@@ -51,9 +53,9 @@ def _fmt_usd(v):
     return f"${v:.2f}"
 
 
-def _load_data(symbols, years=5):
+def _load_data(symbols, years=5, warmup_days=_WARMUP_DAYS):
     end = datetime.today()
-    start = end - timedelta(days=years * 370)
+    start = end - timedelta(days=years * 370 + warmup_days)
     print(f"  Downloading {len(symbols)} tickers ({years} years)...")
     data = yf.download(
         list(set(symbols + ["SPY"])),
@@ -130,9 +132,10 @@ def qualify_at_date(close, symbols, idx, high_window=20, rank_window=120, recent
 def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_date=None,
                  top_n=20, buy_top=10, initial_cash_per_stock=2000,
                  dd_switch_to_spy=0.15, reentry_min_qual=30, reentry_spy_ma=50,
-                 spy_cooldown_weeks=4, slippage=0.001):
+                 spy_cooldown_weeks=4, slippage=0.001,
+                 high_window=20, rank_window=_RANK_WINDOW, recent_days=5):
     if start_date is None:
-        start_date = close.index[0]
+        start_date = close.index[min(rank_window, len(close.index) - 1)]
     if end_date is None:
         end_date = close.index[-1]
 
@@ -168,7 +171,7 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
         idx = date_to_idx[friday]
         spy_price = close.iloc[idx]["SPY"]
 
-        top20 = qualify_at_date(close, symbols, idx)
+        top20 = qualify_at_date(close, symbols, idx, high_window, rank_window, recent_days)
         top20_set = {s for s, _ in top20}
         n_qual = len(top20)
 
@@ -441,10 +444,11 @@ def run_all_periods(top_n=20, buy_top=10, years=5, initial_cash_per_stock=2000):
     close, open_prices = _load_data(symbols, years)
     avail = [s for s in symbols if s in close.columns]
 
+    full_start = close.index[-1] - timedelta(days=years * 365)
     bull_window, bear_window = detect_bull_bear_windows(close)
 
     periods = [
-        ("full", "全周期", None, None),
+        ("full", "全周期", full_start, None),
     ]
     if bull_window:
         periods.append(("bull", f"牛市 {bull_window[0].date()}→{bull_window[1].date()}", bull_window[0], bull_window[1]))

@@ -1,6 +1,6 @@
 """
-回测 — 20日新高 + 严进宽出轮动策略
-池子20只：20日新高筛选前20名。买top10，持mid10，跌出池子就卖。
+回测 — 20日新高 + 120日动量排序 + 严进宽出轮动策略
+池子20只：20日新高过滤后按120日涨幅筛选前20名。买top10，持mid10，跌出池子就卖。
 """
 
 import os
@@ -104,18 +104,18 @@ def detect_bull_bear_windows(close, window=120):
     return bull, bear
 
 
-def qualify_at_date(close, symbols, idx):
-    if idx < 20:
+def qualify_at_date(close, symbols, idx, high_window=20, rank_window=120, recent_days=5):
+    if idx < max(high_window, rank_window):
         return []
-    window = close.iloc[idx - 19: idx + 1]
-    cutoff = window.index[-5]
-    past = close.iloc[idx - 20]
+    window = close.iloc[idx - high_window + 1: idx + 1]
+    cutoff = window.index[-recent_days]
+    past = close.iloc[idx - rank_window]
     results = []
     for sym in symbols:
         if sym not in close.columns:
             continue
         series = window[sym].dropna()
-        if len(series) < 20:
+        if len(series) < high_window:
             continue
         max_date = series.idxmax()
         if max_date >= cutoff:

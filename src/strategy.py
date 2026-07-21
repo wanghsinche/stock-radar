@@ -173,7 +173,7 @@ def main():
     name_map = dict(zip(constituents["Symbol"], constituents["Security"]))
 
     end = beijing_now
-    start = end - timedelta(days=60)
+    start = end - timedelta(days=260)
     print(f"  Downloading {len(symbols)} tickers...")
     import yfinance as yf
     data = yf.download(
@@ -309,7 +309,8 @@ def main():
         "mode": strategy_name,
         "reason": mode_reason,
         "n_qualified": n_qual,
-        "qualified": [{"symbol": q["symbol"], "ret_20d": round(q["ret_20d"] * 100, 2),
+        "qualified": [{"symbol": q["symbol"], "rank_ret": round(q["rank_ret"] * 100, 2),
+                       "rank_window": q.get("rank_window", 120),
                        "close": round(q["close"], 2), "high_date": str(q["high_date"].date())}
                       for q in qualifiers],
         "top20": [q["symbol"] for q in top20],

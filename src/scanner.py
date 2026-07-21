@@ -1,5 +1,5 @@
 """
-SP500 20日新高雷达 — 筛选过去20日创20日新高的股票（新高日落在最近5日），按20日涨幅排名
+SP500 20日新高雷达 — 筛选过去20日创20日新高的股票（新高日落在最近5日），按120日涨幅排名
 """
 
 from datetime import datetime, timedelta
@@ -24,26 +24,30 @@ def fetch_sp500_constituents() -> pd.DataFrame:
 
 
 def qualify_20day_highs(
-    close: pd.DataFrame, symbols: list[str]
+    close: pd.DataFrame,
+    symbols: list[str],
+    rank_window: int = 120,
+    high_window: int = 20,
+    recent_days: int = 5,
 ) -> list[dict]:
     """
-    For each stock: look at last 20 trading days.
-    If the max close in that window falls in the most recent 5 days → qualifies.
-    Returns list of {symbol, name, ret_20d, close, high_date} sorted by ret_20d desc.
+    For each stock: look at last high_window trading days.
+    If the max close in that window falls in the most recent recent_days → qualifies.
+    Returns list sorted by rank_window return descending.
     """
-    if len(close) < 21:
+    if len(close) <= max(rank_window, high_window):
         return []
 
-    window = close.tail(20)
-    cutoff = window.index[-5]
-    past = close.iloc[-21]
+    window = close.tail(high_window)
+    cutoff = window.index[-recent_days]
+    past = close.iloc[-rank_window - 1]
 
     results = []
     for sym in symbols:
         if sym not in close.columns:
             continue
         series = window[sym].dropna()
-        if len(series) < 20:
+        if len(series) < high_window:
             continue
 
         max_val = series.max()
@@ -53,15 +57,16 @@ def qualify_20day_highs(
             cur_price = close[sym].iloc[-1]
             past_price = past[sym]
             if pd.notna(cur_price) and pd.notna(past_price) and past_price > 0:
-                ret_20d = cur_price / past_price - 1
+                rank_ret = cur_price / past_price - 1
                 results.append({
                     "symbol": sym,
-                    "ret_20d": ret_20d,
+                    "rank_ret": rank_ret,
+                    "rank_window": rank_window,
                     "close": cur_price,
                     "high_date": max_date,
                 })
 
-    results.sort(key=lambda x: x["ret_20d"], reverse=True)
+    results.sort(key=lambda x: x["rank_ret"], reverse=True)
     return results
 
 
@@ -71,9 +76,9 @@ def scan_top_strong(top_n: int = 20) -> pd.DataFrame:
     name_map = dict(zip(constituents["Symbol"], constituents["Security"]))
 
     end = datetime.today()
-    start = end - timedelta(days=60)
+    start = end - timedelta(days=260)
 
-    print(f"  Downloading {len(symbols)} tickers (last 60 days)...")
+    print(f"  Downloading {len(symbols)} tickers (last 260 days)...")
     data = yf.download(
         symbols,
         start=start.strftime("%Y-%m-%d"),
@@ -96,7 +101,7 @@ def scan_top_strong(top_n: int = 20) -> pd.DataFrame:
             "Symbol": q["symbol"],
             "Security": name_map.get(q["symbol"], q["symbol"]),
             "Close": q["close"],
-            "Return_pct": q["ret_20d"] * 100,
+            "Return_pct": q["rank_ret"] * 100,
             "High_Date": q["high_date"].strftime("%m/%d"),
         })
     return pd.DataFrame(rows)

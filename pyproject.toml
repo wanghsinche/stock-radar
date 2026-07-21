@@ -23,5 +23,3 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src"]
 
-[tool.uv.sources]
-webull-openapi-python-sdk = { path = "webull_sdk" }

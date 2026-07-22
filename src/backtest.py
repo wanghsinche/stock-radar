@@ -174,21 +174,24 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
         top20 = qualify_at_date(close, symbols, idx, high_window, rank_window, recent_days)
         top20_set = {s for s, _ in top20}
         n_qual = len(top20)
-
         n_buy = calc_buy_count(n_qual, buy_top)
-
         buy_list = [s for s, _ in top20[:n_buy]] if n_buy > 0 else []
 
-        # --- compute current holdings value & drawdown (MTM at Friday close) ---
+        # Mark the portfolio to market at this Friday close before executing
+        # trades scheduled for the next trading day's open.
         prices = {s: close.iloc[idx][s] for s in positions if pd.notna(close.iloc[idx][s])}
         h_val = calc_portfolio_value(0, positions, prices, spy_mode, spy_shares, spy_price)
         port_value = cash + h_val
+        cash_at_close = cash
+        n_positions_at_close = len(positions)
+        spy_mode_at_close = spy_mode
+
         peak_port_value, dd_from_peak = calc_drawdown(port_value, peak_port_value)
         if budget_year != friday.year:
             position_budget = max(1, int(port_value / buy_top))
             budget_year = friday.year
 
-        trading_mode = "stocks"
+        trading_mode = "spy" if spy_mode else "stocks"
 
         # --- execution price: next trading day open + slippage ---
         exec_idx = min(idx + 1, len(close) - 1)
@@ -207,7 +210,6 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
         spy_entry = is_spy_entry_trigger(spy_mode, dd_from_peak, weeks_since_stock_entry,
                                          dd_switch_to_spy, spy_cooldown_weeks)
         spy_exit = is_spy_exit_trigger(spy_mode, n_qual, spy_price, spy_ma, reentry_min_qual)
-        force_rebalance = False
 
         # --- SPY mode entry (drawdown protection, with cooldown) ---
         if spy_entry:
@@ -225,8 +227,6 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
             if is_spy_exit_trigger(True, n_qual, spy_price, spy_ma, reentry_min_qual):
                 spy_mode = False
                 weeks_since_stock_entry = 0
-                h_val = 0.0
-                force_rebalance = True
                 trading_mode = "rebalance"
             else:
                 spy_p = _exec_price("SPY", is_buy=True)
@@ -237,38 +237,35 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
                                       "price": spy_p, "qty": spy_shares, "value": spy_shares * spy_p})
                 spy_mode = True
                 weeks_since_stock_entry = 999
-                h_val = spy_shares * spy_price
-                port_value = h_val
                 trading_mode = "spy_in"
 
         # --- SPY mode exit (re-entry to stocks) ---
         if not spy_entry and spy_exit:
-                spy_p = _exec_price("SPY", is_buy=False)
-                if spy_p is not None and spy_p > 0:
-                    proceeds = spy_shares * spy_p
-                    cash += proceeds
-                    trade_log.append({"date": exec_date, "action": "SELL_SPY", "symbol": "SPY",
-                                      "price": spy_p, "qty": spy_shares, "value": proceeds})
-                spy_shares = 0.0
-                spy_mode = False
-                weeks_since_stock_entry = 0
-                h_val = 0.0
-                trading_mode = "stocks_in"
+            spy_p = _exec_price("SPY", is_buy=False)
+            if spy_p is not None and spy_p > 0:
+                proceeds = spy_shares * spy_p
+                cash += proceeds
+                trade_log.append({"date": exec_date, "action": "SELL_SPY", "symbol": "SPY",
+                                  "price": spy_p, "qty": spy_shares, "value": proceeds})
+            spy_shares = 0.0
+            spy_mode = False
+            weeks_since_stock_entry = 0
+            trading_mode = "stocks_in"
 
         # --- normal stock trading (when NOT in SPY mode) ---
         if not spy_mode:
             sell_syms = calc_sell_list(set(positions.keys()), top20_set)
             for sym in sell_syms:
-                    p = _exec_price(sym, is_buy=False)
-                    if p is not None and p > 0:
-                        proceeds = positions[sym] * p
-                        cash += proceeds
-                        trade_log.append({"date": exec_date, "action": "SELL", "symbol": sym,
-                                          "price": p, "qty": positions[sym], "value": proceeds})
-                        if sym in buy_dates:
-                            hold_periods.append(int((exec_date - buy_dates[sym]).days / 7))
-                            del buy_dates[sym]
-                        del positions[sym]
+                p = _exec_price(sym, is_buy=False)
+                if p is not None and p > 0:
+                    proceeds = positions[sym] * p
+                    cash += proceeds
+                    trade_log.append({"date": exec_date, "action": "SELL", "symbol": sym,
+                                      "price": p, "qty": positions[sym], "value": proceeds})
+                    if sym in buy_dates:
+                        hold_periods.append(int((exec_date - buy_dates[sym]).days / 7))
+                        del buy_dates[sym]
+                    del positions[sym]
 
             for sym in buy_list:
                 if sym not in positions and cash >= position_budget:
@@ -286,38 +283,27 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
                         trade_log.append({"date": exec_date, "action": "BUY", "symbol": sym,
                                           "price": p, "qty": shares, "value": cost})
 
-            prices = {s: close.iloc[idx][s] for s in positions if pd.notna(close.iloc[idx][s])}
-            h_val = calc_portfolio_value(0, positions, prices)
-            port_value = cash + h_val
-
         weeks_since_stock_entry = increment_cooldown(spy_mode, weeks_since_stock_entry)
 
-        # --- record ---
-        if prev_friday is None:
-            prev_friday = friday
-            continue
-
-        if prev_port_value is not None:
+        # --- record Friday close performance before next-Monday trades take effect ---
+        if prev_friday is not None and prev_port_value is not None:
             weekly_r = port_value / prev_port_value - 1
-        else:
-            weekly_r = 0.0
-        prev_port_value = port_value
-
-        records.append({
-            "date": friday,
-            "prev_date": prev_friday,
-            "holdings_value": h_val,
-            "cash": cash,
-            "port_value": port_value,
-            "return": weekly_r,
-            "n_qualifiers": n_qual,
-            "n_positions": len(positions),
-            "n_buy": n_buy,
-            "position_budget": position_budget,
-            "spy_mode": spy_mode,
-            "trading_mode": trading_mode,
-        })
+            records.append({
+                "date": friday,
+                "prev_date": prev_friday,
+                "holdings_value": h_val,
+                "cash": cash_at_close,
+                "port_value": port_value,
+                "return": weekly_r,
+                "n_qualifiers": n_qual,
+                "n_positions": n_positions_at_close,
+                "n_buy": n_buy,
+                "position_budget": position_budget,
+                "spy_mode": spy_mode_at_close,
+                "trading_mode": trading_mode,
+            })
         prev_friday = friday
+        prev_port_value = port_value
 
     if not records:
         return None

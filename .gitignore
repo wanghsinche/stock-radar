@@ -9,6 +9,7 @@ config_local.yaml
 reports/
 /data/
 web/node_modules/
+web/package-lock.json
 web/dist/
 web/.astro/
 proofs/raw/

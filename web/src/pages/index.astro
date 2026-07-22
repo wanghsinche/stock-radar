@@ -1,0 +1,84 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MetricCard from '../components/MetricCard.astro';
+import HoldingsTable from '../components/HoldingsTable.astro';
+import TradesTable from '../components/TradesTable.astro';
+import WeeklyCard from '../components/WeeklyCard.astro';
+import latest from '../data/latest.json';
+import holdings from '../data/holdings.json';
+import trades from '../data/trades.json';
+import weekly from '../data/weekly.json';
+import plan from '../data/plan.json';
+import { money, pct, tone } from '../lib/format';
+import PlanCard from '../components/PlanCard.astro';
+
+const recentTrades = trades.slice(0, 4);
+const latestWeek = weekly[0];
+---
+<BaseLayout>
+  <section class="wrap hero">
+    <div>
+      <div class="eyebrow">Real money. Machine record.</div>
+      <h1>{latest.title}</h1>
+      <p class="lead">{latest.subtitle}。周六公布策略，周一执行交易。这里持续记录账户变化、真实持仓和每一笔交易。</p>
+    </div>
+    <aside class="hero-note">
+      <div class="status">
+        <span class="pill">{latest.status}</span>
+        <span class="muted">更新于 {latest.asOf}</span>
+      </div>
+      <p>{latest.statusNote}</p>
+      <p class="muted" style="margin-top: 18px;">连续公开 {latest.publicDays} 天。交易结果会完整保留，盈利和亏损都会记录。</p>
+    </aside>
+  </section>
+
+  <section class="wrap grid metrics" aria-label="账户指标">
+    <MetricCard label="当前净值" value={money(latest.netValue)} subvalue={latest.initialCapital ? `收益基准 ${money(latest.initialCapital)}` : 'Webull 实盘净值'} />
+    <MetricCard label="累计收益" value={pct(latest.cumulativeReturnPct)} tone={tone(latest.cumulativeReturnPct)} subvalue={latest.initialCapital ? '按收益基准计算' : '待设置净入金基准'} />
+    <MetricCard label="本周收益" value={pct(latest.weeklyReturnPct)} tone={tone(latest.weeklyReturnPct)} subvalue={`年内 ${pct(latest.ytdReturnPct)}`} />
+    <MetricCard label="最大回撤" value={pct(latest.maxDrawdownPct)} tone="neg" subvalue={`相对 SPY ${pct(latest.spyRelativePct)}`} />
+  </section>
+
+  <section class="wrap section">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Published plan</div>
+        <h2>策略公布</h2>
+      </div>
+    </div>
+    <PlanCard plan={plan} />
+  </section>
+
+  <section class="wrap section">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Latest execution</div>
+        <h2>最新执行</h2>
+      </div>
+      <a class="button" href={`/weekly/${latest.latestWeeklySlug}/`}>查看详情</a>
+    </div>
+    {latestWeek && <WeeklyCard week={latestWeek} />}
+  </section>
+
+  <section class="wrap section">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Current positions</div>
+        <h2>当前持仓</h2>
+      </div>
+      <a class="button" href="/holdings/">全部持仓</a>
+    </div>
+    <HoldingsTable holdings={holdings} />
+  </section>
+
+  <section class="wrap section">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Recent trades</div>
+        <h2>最近交易</h2>
+      </div>
+      <a class="button" href="/trades/">全部交易</a>
+    </div>
+    <TradesTable trades={recentTrades} />
+  </section>
+</BaseLayout>

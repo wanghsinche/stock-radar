@@ -10,6 +10,9 @@ import yaml
 from dotenv import load_dotenv
 
 
+TOP_N = 20
+
+
 def load_config():
     path = os.path.join(os.path.dirname(__file__), "..", "config.yaml")
     with open(path) as f:
@@ -27,9 +30,8 @@ def main():
     print(f"{'=' * 60}")
 
     config = load_config()
-    top_n = config.get("radar", {}).get("top_n", 20)
 
-    df = scan_top_strong(top_n=top_n)
+    df = scan_top_strong(top_n=TOP_N)
 
     print(f"\n{'=' * 60}")
     print(f"  📤 Sending to Telegram...")

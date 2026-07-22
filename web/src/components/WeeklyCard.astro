@@ -1,0 +1,49 @@
+---
+import { money, pct, tone } from '../lib/format';
+
+interface Weekly {
+  slug: string;
+  date: string;
+  title: string;
+  phase: string;
+  publishedAt: string;
+  executedAt: string;
+  netValue: number | null;
+  weeklyReturnPct: number | null;
+  cumulativeReturnPct: number | null;
+  buys: string[];
+  sells: string[];
+  holds: string[];
+}
+
+const { week } = Astro.props as { week: Weekly };
+---
+<article class="weekly-card">
+  <div>
+    <div class="weekly-meta">
+      <span class="tag">{week.phase}</span>
+      <span class="tag">公布 {week.publishedAt}</span>
+      <span class="tag">执行 {week.executedAt}</span>
+    </div>
+    <h3 style="margin-top: 14px;"><a href={`/weekly/${week.slug}/`}>{week.title}</a></h3>
+  </div>
+  <div class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 10px;">
+    <div>
+      <div class="label">账户净值</div>
+      <strong>{money(week.netValue)}</strong>
+    </div>
+    <div>
+      <div class="label">本周</div>
+      <strong class={tone(week.weeklyReturnPct)}>{pct(week.weeklyReturnPct)}</strong>
+    </div>
+    <div>
+      <div class="label">累计</div>
+      <strong class={tone(week.cumulativeReturnPct)}>{pct(week.cumulativeReturnPct)}</strong>
+    </div>
+  </div>
+  <div class="chips">
+    {week.buys.map((symbol) => <span class="chip">买 {symbol}</span>)}
+    {week.sells.map((symbol) => <span class="chip">卖 {symbol}</span>)}
+    {!week.buys.length && !week.sells.length && <span class="muted">无交易</span>}
+  </div>
+</article>

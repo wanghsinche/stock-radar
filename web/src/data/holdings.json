@@ -1,0 +1,112 @@
+[
+  {
+    "symbol": "ADBE",
+    "name": "ADBE",
+    "quantity": 8.0,
+    "marketValue": 1820.32,
+    "weightPct": 8.62,
+    "unrealizedPnl": -34.63,
+    "unrealizedPnlPct": -1.87,
+    "holdingDays": 2
+  },
+  {
+    "symbol": "VEEV",
+    "name": "VEEV",
+    "quantity": 10.0,
+    "marketValue": 1886.7,
+    "weightPct": 8.94,
+    "unrealizedPnl": -46.6,
+    "unrealizedPnlPct": -2.41,
+    "holdingDays": 2
+  },
+  {
+    "symbol": "PSX",
+    "name": "PSX",
+    "quantity": 9.0,
+    "marketValue": 1929.51,
+    "weightPct": 9.14,
+    "unrealizedPnl": 69.43,
+    "unrealizedPnlPct": 3.73,
+    "holdingDays": 2
+  },
+  {
+    "symbol": "TECH",
+    "name": "TECH",
+    "quantity": 28.0,
+    "marketValue": 2005.64,
+    "weightPct": 9.5,
+    "unrealizedPnl": 26.89,
+    "unrealizedPnlPct": 1.36,
+    "holdingDays": 16
+  },
+  {
+    "symbol": "MPC",
+    "name": "MPC",
+    "quantity": 6.0,
+    "marketValue": 1931.1,
+    "weightPct": 9.15,
+    "unrealizedPnl": 52.25,
+    "unrealizedPnlPct": 2.78,
+    "holdingDays": 2
+  },
+  {
+    "symbol": "VLO",
+    "name": "VLO",
+    "quantity": 6.0,
+    "marketValue": 1897.08,
+    "weightPct": 8.99,
+    "unrealizedPnl": 48.0,
+    "unrealizedPnlPct": 2.6,
+    "holdingDays": 2
+  },
+  {
+    "symbol": "PANW",
+    "name": "PANW",
+    "quantity": 6.0,
+    "marketValue": 2067.9,
+    "weightPct": 9.79,
+    "unrealizedPnl": 118.55,
+    "unrealizedPnlPct": 6.08,
+    "holdingDays": 9
+  },
+  {
+    "symbol": "AJG",
+    "name": "AJG",
+    "quantity": 7.0,
+    "marketValue": 1737.54,
+    "weightPct": 8.23,
+    "unrealizedPnl": -6.93,
+    "unrealizedPnlPct": -0.4,
+    "holdingDays": 16
+  },
+  {
+    "symbol": "GDDY",
+    "name": "GDDY",
+    "quantity": 21.0,
+    "marketValue": 1938.72,
+    "weightPct": 9.18,
+    "unrealizedPnl": -27.55,
+    "unrealizedPnlPct": -1.4,
+    "holdingDays": 2
+  },
+  {
+    "symbol": "PYPL",
+    "name": "PYPL",
+    "quantity": 35.0,
+    "marketValue": 1954.05,
+    "weightPct": 9.26,
+    "unrealizedPnl": -16.45,
+    "unrealizedPnlPct": -0.83,
+    "holdingDays": 2
+  },
+  {
+    "symbol": "JKHY",
+    "name": "JKHY",
+    "quantity": 13.0,
+    "marketValue": 1943.5,
+    "weightPct": 9.21,
+    "unrealizedPnl": -21.19,
+    "unrealizedPnlPct": -1.08,
+    "holdingDays": 2
+  }
+]

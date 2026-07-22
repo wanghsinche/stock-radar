@@ -1,0 +1,44 @@
+---
+import { money2, pct, tone } from '../lib/format';
+
+interface Trade {
+  date: string;
+  action: 'BUY' | 'SELL';
+  symbol: string;
+  quantity: number;
+  price: number;
+  amount: number;
+  realizedPnl: number | null;
+  realizedPnlPct: number | null;
+}
+
+const { trades } = Astro.props as { trades: Trade[] };
+---
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>日期</th>
+        <th>代码</th>
+        <th>方向</th>
+        <th>数量</th>
+        <th>成交价</th>
+        <th>金额</th>
+        <th>已实现</th>
+      </tr>
+    </thead>
+    <tbody>
+      {trades.map((trade) => (
+        <tr>
+          <td>{trade.date}</td>
+          <td class="symbol">{trade.symbol}</td>
+          <td class={trade.action === 'BUY' ? 'pos' : 'neg'}>{trade.action === 'BUY' ? '买入' : '卖出'}</td>
+          <td>{trade.quantity}</td>
+          <td>{money2(trade.price)}</td>
+          <td>{money2(trade.amount)}</td>
+          <td class={tone(trade.realizedPnlPct)}>{trade.realizedPnl === null || trade.realizedPnl === undefined ? '-' : `${money2(trade.realizedPnl)} / ${pct(trade.realizedPnlPct)}`}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>

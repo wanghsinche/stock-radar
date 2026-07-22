@@ -1,0 +1,39 @@
+---
+interface Plan {
+  active: boolean;
+  status: string;
+  generatedAt: string | null;
+  signalDate: string | null;
+  executionDate: string | null;
+  mode: string | null;
+  nQualified: number | null;
+  portfolioValue: number | null;
+  buyList: string[];
+  sellList: string[];
+  holdList: string[];
+}
+
+const { plan } = Astro.props as { plan: Plan };
+---
+<article class="weekly-card">
+  <div>
+    <div class="weekly-meta">
+      <span class="tag">{plan.active ? '策略公布' : '暂无策略'}</span>
+      {plan.signalDate && <span class="tag">信号 {plan.signalDate}</span>}
+      {plan.executionDate && <span class="tag">执行 {plan.executionDate}</span>}
+      {plan.nQualified !== null && <span class="tag">样本 {plan.nQualified}</span>}
+    </div>
+    <h3 style="margin-top: 14px;">{plan.active ? '策略公布' : plan.status}</h3>
+  </div>
+
+  {plan.active ? (
+    <div class="chips">
+      {plan.buyList.map((symbol) => <span class="chip">买 {symbol}</span>)}
+      {plan.sellList.map((symbol) => <span class="chip">卖 {symbol}</span>)}
+      {plan.holdList.map((symbol) => <span class="chip">持有 {symbol}</span>)}
+      {!plan.buyList.length && !plan.sellList.length && !plan.holdList.length && <span class="muted">无交易</span>}
+    </div>
+  ) : (
+    <p class="muted">最近一次策略公布会停留在这里，直到下一次覆盖。</p>
+  )}
+</article>

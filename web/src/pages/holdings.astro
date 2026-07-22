@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HoldingsTable from '../components/HoldingsTable.astro';
+import MetricCard from '../components/MetricCard.astro';
+import latest from '../data/latest.json';
+import holdings from '../data/holdings.json';
+import { money, pct, tone } from '../lib/format';
+
+const totalMarketValue = holdings.reduce((sum, item) => sum + item.marketValue, 0);
+const totalPnl = holdings.reduce((sum, item) => sum + item.unrealizedPnl, 0);
+const avgPnlPct = holdings.length ? holdings.reduce((sum, item) => sum + item.unrealizedPnlPct, 0) / holdings.length : 0;
+---
+<BaseLayout title="当前持仓｜机器账户" description="机器账户当前真实持仓记录，包含数量、市值、仓位、浮盈亏和持有天数。">
+  <section class="wrap article">
+    <div class="eyebrow">Current positions</div>
+    <h1>当前持仓</h1>
+    <p>这里展示账户当前持仓。页面只记录结果，不展开模型细节。</p>
+  </section>
+
+  <section class="wrap grid metrics">
+    <MetricCard label="账户净值" value={money(latest.netValue)} subvalue={`更新 ${latest.asOf}`} />
+    <MetricCard label="持仓市值" value={money(totalMarketValue)} subvalue={`${holdings.length} 只股票`} />
+    <MetricCard label="浮动盈亏" value={money(totalPnl)} tone={tone(totalPnl)} subvalue={`平均 ${pct(avgPnlPct)}`} />
+    <MetricCard label="当前状态" value={latest.status} subvalue="机器账户状态" />
+  </section>
+
+  <section class="wrap section">
+    <HoldingsTable holdings={holdings} />
+  </section>
+</BaseLayout>

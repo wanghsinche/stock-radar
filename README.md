@@ -86,7 +86,7 @@ pm2 start ecosystem.config.js
 
 ### 配置
 
-- `config.yaml`: `radar.top_n` 控制候选池大小（默认 20）
+- `config.yaml`: 运行环境配置
 - `.env`: 存储 Telegram bot token 和 chat_id
 
 ## 文件结构

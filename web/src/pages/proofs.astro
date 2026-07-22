@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import proofs from '../data/proofs.json';
+---
+<BaseLayout title="外部记录｜机器账户" description="机器账户外部记录，收录 Webull 社区链接、截图和公开留痕。">
+  <section class="wrap article">
+    <div class="eyebrow">Proof archive</div>
+    <h1>外部记录</h1>
+    <p>截图、社区链接和公开留痕会放在这里。不是证明给谁看，只是把痕迹留下。</p>
+  </section>
+
+  <section class="wrap section proof-grid">
+    {proofs.map((proof) => (
+      <article class="card">
+        {proof.image ? <img src={proof.image} alt={proof.title} /> : <div class="proof-box">暂无截图<br />等待外部记录</div>}
+        <h3 style="margin-top: 16px;">{proof.title}</h3>
+        <p class="muted" style="margin-top: 8px;">{proof.date} / {proof.type}</p>
+        <p style="margin-top: 10px;">{proof.note}</p>
+        {proof.url && <p style="margin-top: 14px;"><a class="button" href={proof.url}>查看链接</a></p>}
+      </article>
+    ))}
+  </section>
+</BaseLayout>

@@ -1,0 +1,58 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MetricCard from '../../components/MetricCard.astro';
+import weekly from '../../data/weekly.json';
+import { money, pct, tone } from '../../lib/format';
+
+export function getStaticPaths() {
+  return weekly.map((week) => ({
+    params: { slug: week.slug },
+    props: { week }
+  }));
+}
+
+const { week } = Astro.props;
+const title = `${week.title}｜机器账户每周记录`;
+const description = `${week.date} 机器账户交易记录。买入 ${week.buys.length} 只，卖出 ${week.sells.length} 只。`;
+---
+<BaseLayout title={title} description={description} canonical={`/weekly/${week.slug}/`}>
+  <section class="wrap article">
+    <div class="eyebrow">Weekly log / {week.date}</div>
+    <h1>{week.title}</h1>
+    <p>本页根据 Webull 真实成交记录生成，保留当周交易动作和账户状态。</p>
+  </section>
+
+  <section class="wrap grid metrics">
+    <MetricCard label="账户净值" value={money(week.netValue)} subvalue={`执行 ${week.executedAt}`} />
+    <MetricCard label="本周收益" value={pct(week.weeklyReturnPct)} tone={tone(week.weeklyReturnPct)} subvalue={`SPY ${pct(week.spyReturnPct)}`} />
+    <MetricCard label="累计收益" value={pct(week.cumulativeReturnPct)} tone={tone(week.cumulativeReturnPct)} subvalue="按收益基准计算" />
+    <MetricCard label="账户状态" value={week.phase} subvalue={`公布 ${week.publishedAt}`} />
+  </section>
+
+  <section class="wrap section list">
+    <div class="card">
+      <div class="label">本周买入</div>
+      <div class="chips" style="margin-top: 14px;">
+        {week.buys.length ? week.buys.map((symbol) => <span class="chip">{symbol}</span>) : <span class="muted">无</span>}
+      </div>
+    </div>
+    <div class="card">
+      <div class="label">本周卖出</div>
+      <div class="chips" style="margin-top: 14px;">
+        {week.sells.length ? week.sells.map((symbol) => <span class="chip">{symbol}</span>) : <span class="muted">无</span>}
+      </div>
+    </div>
+    <div class="card">
+      <div class="label">记录来源</div>
+      <p style="margin-top: 14px;">Webull 订单历史。收益与持仓会在账户快照可用时更新。</p>
+    </div>
+  </section>
+
+  <section class="wrap section">
+    <div class="card">
+      <div class="label">公开记录</div>
+      <p style="margin-top: 12px;">本页保留当周交易结果和账户变化。</p>
+      {week.proofUrl ? <p><a class="button" href={week.proofUrl}>查看外部记录</a></p> : <p class="muted">本周暂无外部晒单链接。</p>}
+    </div>
+  </section>
+</BaseLayout>

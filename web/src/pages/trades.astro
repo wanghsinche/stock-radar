@@ -1,0 +1,35 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import TradesTable from '../components/TradesTable.astro';
+import MetricCard from '../components/MetricCard.astro';
+import trades from '../data/trades.json';
+import latest from '../data/latest.json';
+import { money, pct, tone } from '../lib/format';
+
+const sellTrades = trades.filter((item) => item.action === 'SELL');
+const realizedTrades = sellTrades.filter((item) => item.realizedPnl !== null && item.realizedPnl !== undefined);
+const realized = realizedTrades.reduce((sum, item) => sum + (item.realizedPnl || 0), 0);
+const winTrades = realizedTrades.filter((item) => (item.realizedPnl || 0) > 0);
+const buyCount = trades.filter((item) => item.action === 'BUY').length;
+const sellCount = sellTrades.length;
+const winRate = realizedTrades.length ? (winTrades.length / realizedTrades.length) * 100 : null;
+const accountPnl = latest.initialCapital ? latest.netValue - latest.initialCapital : null;
+---
+<BaseLayout title="交易流水｜机器账户" description="机器账户真实交易流水，记录日期、方向、代码、价格、数量、金额和已实现盈亏。">
+  <section class="wrap article">
+    <div class="eyebrow">Trade ledger</div>
+    <h1>交易流水</h1>
+    <p>每一笔执行都会保留。买入、卖出、盈利和亏损都在同一张表里。</p>
+  </section>
+
+  <section class="wrap grid metrics">
+    <MetricCard label="交易笔数" value={`${trades.length}`} subvalue={`买 ${buyCount} / 卖 ${sellCount}`} />
+    <MetricCard label="账户总盈亏" value={accountPnl === null ? '-' : money(accountPnl)} tone={tone(accountPnl)} subvalue={latest.initialCapital ? `基准 ${money(latest.initialCapital)} / ${pct(latest.cumulativeReturnPct)}` : '待设置收益基准'} />
+    <MetricCard label="平仓盈亏估算" value={realizedTrades.length ? money(realized) : '-'} tone={tone(realized)} subvalue={`FIFO 匹配 ${realizedTrades.length} 笔卖出`} />
+    <MetricCard label="平仓胜率" value={pct(winRate)} tone={tone(winRate)} subvalue="按可匹配成本样本" />
+  </section>
+
+  <section class="wrap section">
+    <TradesTable trades={trades} />
+  </section>
+</BaseLayout>

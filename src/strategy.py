@@ -23,6 +23,7 @@ BEIJING = timezone(timedelta(hours=8))
 
 from src.scanner import fetch_sp500_constituents, qualify_20day_highs
 from src.notifier import send_telegram, format_message
+from src.holiday import next_trading_day
 from src.trading import (
     calc_buy_count,
     calc_sell_list,
@@ -39,6 +40,20 @@ _DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 _LAST_POS = os.path.join(_DATA_DIR, "last_positions.json")
 _TRADE_LOG = os.path.join(_DATA_DIR, "trade_log.json")
 _PERF_HISTORY = os.path.join(_DATA_DIR, "performance_history.json")
+TOP_N = 20
+BUY_TOP = 10
+
+
+def _last_completed_week_signal_date(index, now_date):
+    """Use only the last trading day of a completed week for signals."""
+    if now_date.weekday() >= 5:
+        target_friday = now_date - timedelta(days=now_date.weekday() - 4)
+    else:
+        target_friday = now_date - timedelta(days=now_date.weekday() + 3)
+    eligible = [d for d in index if d.date() <= target_friday]
+    if not eligible:
+        raise RuntimeError(f"No market data available before completed week ending {target_friday}")
+    return eligible[-1]
 
 
 def load_config():
@@ -157,8 +172,6 @@ def load_strategy(date_str: str = None) -> dict:
 def main():
     load_dotenv()
     config = load_config()
-    top_n = config.get("radar", {}).get("top_n", 20)
-    buy_top = 10
     initial_cash_per_stock = 2000
 
     beijing_now = datetime.now(BEIJING)
@@ -187,6 +200,10 @@ def main():
     if isinstance(close.columns, pd.MultiIndex):
         close = close.droplevel(0, axis=1)
 
+    signal_date = _last_completed_week_signal_date(close.index, beijing_now.date())
+    close = close.loc[:signal_date]
+    print(f"  ✓ Signal close date: {signal_date.date()}")
+
     avail = [s for s in symbols if s in close.columns]
 
     # 2. Qualify
@@ -194,10 +211,10 @@ def main():
     print(f"  ✓ {len(qualifiers)} stocks qualified")
 
     # 3. Build pool
-    top20 = qualifiers[:top_n]
+    top20 = qualifiers[:TOP_N]
     top20_set = {q["symbol"] for q in top20}
-    top10 = [q["symbol"] for q in top20[:buy_top]]
-    mid10 = [q["symbol"] for q in top20[buy_top:top_n]]
+    top10 = [q["symbol"] for q in top20[:BUY_TOP]]
+    mid10 = [q["symbol"] for q in top20[BUY_TOP:TOP_N]]
     n_qual = len(qualifiers)
 
     # 4. Load last positions
@@ -219,7 +236,7 @@ def main():
     if last.get("budget_year") == current_year:
         position_budget = last.get("position_budget", initial_cash_per_stock)
     else:
-        position_budget = max(1, int(current_val / buy_top))
+        position_budget = max(1, int(current_val / BUY_TOP))
 
     # 6. Determine mode
     spy_mode = last_spy_mode
@@ -263,7 +280,7 @@ def main():
         strategy_name = "spy"
     else:
         sell_list = sorted(held_symbols) if force_rebalance else calc_sell_list(held_symbols, top20_set)
-        n_buy = calc_buy_count(n_qual, buy_top)
+        n_buy = calc_buy_count(n_qual, BUY_TOP)
 
         buy_candidates = top10 if force_rebalance else [s for s in top10 if s not in held_symbols]
         buy_list = buy_candidates[:n_buy]
@@ -298,13 +315,13 @@ def main():
                 can_buy_n += 1
 
     # 9. Build strategy JSON
-    next_monday = beijing_now + timedelta(days=(7 - beijing_now.weekday()) % 7 or 7)
     date_str = beijing_now.strftime("%Y-%m-%d")
-    exec_date = next_monday.strftime("%Y-%m-%d")
+    exec_date = next_trading_day(signal_date.date()).strftime("%Y-%m-%d")
     risk_alert = update_risk_alert(date_str, current_val, spy_price, n_qual, dd_from_peak)
 
     strategy = {
         "generated_at": date_str,
+        "signal_date": signal_date.strftime("%Y-%m-%d"),
         "execution_date": exec_date,
         "mode": strategy_name,
         "reason": mode_reason,

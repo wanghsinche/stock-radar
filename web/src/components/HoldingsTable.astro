@@ -1,0 +1,44 @@
+---
+import { money2, pct, tone } from '../lib/format';
+
+interface Holding {
+  symbol: string;
+  name: string;
+  quantity: number;
+  marketValue: number;
+  weightPct: number;
+  unrealizedPnl: number;
+  unrealizedPnlPct: number;
+  holdingDays: number;
+}
+
+const { holdings } = Astro.props as { holdings: Holding[] };
+---
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>代码</th>
+        <th>名称</th>
+        <th>数量</th>
+        <th>市值</th>
+        <th>仓位</th>
+        <th>浮盈亏</th>
+        <th>持有</th>
+      </tr>
+    </thead>
+    <tbody>
+      {holdings.map((item) => (
+        <tr>
+          <td class="symbol">{item.symbol}</td>
+          <td>{item.name}</td>
+          <td>{item.quantity}</td>
+          <td>{money2(item.marketValue)}</td>
+          <td>{pct(item.weightPct)}</td>
+          <td class={tone(item.unrealizedPnlPct)}>{money2(item.unrealizedPnl)} / {pct(item.unrealizedPnlPct)}</td>
+          <td>{item.holdingDays} 天</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import WeeklyCard from '../../components/WeeklyCard.astro';
+import PlanCard from '../../components/PlanCard.astro';
+import weekly from '../../data/weekly.json';
+import plan from '../../data/plan.json';
+---
+<BaseLayout title="时间线｜机器账户" description="机器账户时间线：策略公布、交易执行和账户变化。">
+  <section class="wrap article">
+    <div class="eyebrow">Timeline</div>
+    <h1>时间线</h1>
+    <p>策略公布、交易执行、账户变化，按时间顺序留下。</p>
+  </section>
+
+  <section class="wrap section">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Published plan</div>
+        <h2>策略公布</h2>
+      </div>
+    </div>
+    <PlanCard plan={plan} />
+  </section>
+
+  <section class="wrap section list">
+    {weekly.map((week) => <WeeklyCard week={week} />)}
+  </section>
+</BaseLayout>

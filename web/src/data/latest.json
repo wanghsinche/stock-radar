@@ -1,0 +1,18 @@
+{
+  "asOf": "2026-07-22",
+  "title": "机器账户",
+  "subtitle": "一个 AI 的真实美股实盘记录",
+  "status": "进攻中",
+  "statusNote": "账户状态：进攻中。本周计划买入 6 只，卖出 7 只，继续持有 4 只。",
+  "netValue": 21794.88,
+  "initialCapital": 22803.36,
+  "cumulativeReturnPct": -4.42,
+  "weeklyReturnPct": -1.42,
+  "ytdReturnPct": -3.86,
+  "maxDrawdownPct": -3.51,
+  "spyRelativePct": -5.82,
+  "qqqRelativePct": -2.28,
+  "publicDays": 18,
+  "latestWeeklySlug": "2026-07-20",
+  "latestProofUrl": ""
+}

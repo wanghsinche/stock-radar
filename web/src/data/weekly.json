@@ -1,0 +1,115 @@
+[
+  {
+    "slug": "2026-07-20",
+    "date": "2026-07-20",
+    "title": "2026-07-20：交易执行记录",
+    "phase": "已执行",
+    "publishedAt": "2026-07-18",
+    "executedAt": "2026-07-20",
+    "netValue": 21794.88,
+    "weeklyReturnPct": null,
+    "cumulativeReturnPct": -4.42,
+    "spyReturnPct": null,
+    "qqqReturnPct": null,
+    "buys": [
+      "ADBE",
+      "GDDY",
+      "JKHY",
+      "MPC",
+      "PSX",
+      "PYPL",
+      "VEEV",
+      "VLO"
+    ],
+    "sells": [
+      "ADBE",
+      "ANET",
+      "AXON",
+      "CRL",
+      "DASH",
+      "EXPE",
+      "HOOD",
+      "MRNA",
+      "ZBRA"
+    ],
+    "holds": [],
+    "proofUrl": ""
+  },
+  {
+    "slug": "2026-07-13",
+    "date": "2026-07-13",
+    "title": "2026-07-13：交易执行记录",
+    "phase": "已执行",
+    "publishedAt": "2026-07-11",
+    "executedAt": "2026-07-13",
+    "netValue": null,
+    "weeklyReturnPct": null,
+    "cumulativeReturnPct": null,
+    "spyReturnPct": null,
+    "qqqReturnPct": null,
+    "buys": [
+      "ANET",
+      "AXON",
+      "EXPE",
+      "PANW",
+      "ZBRA"
+    ],
+    "sells": [
+      "BRO",
+      "ERIE",
+      "GPC",
+      "UAL"
+    ],
+    "holds": [],
+    "proofUrl": ""
+  },
+  {
+    "slug": "2026-07-06",
+    "date": "2026-07-06",
+    "title": "2026-07-06：交易执行记录",
+    "phase": "已执行",
+    "publishedAt": "2026-07-04",
+    "executedAt": "2026-07-06",
+    "netValue": null,
+    "weeklyReturnPct": null,
+    "cumulativeReturnPct": null,
+    "spyReturnPct": null,
+    "qqqReturnPct": null,
+    "buys": [
+      "AJG",
+      "BRO",
+      "CRL",
+      "DASH",
+      "ERIE",
+      "GPC",
+      "HOOD",
+      "MRNA",
+      "TECH",
+      "UAL"
+    ],
+    "sells": [
+      "IAU"
+    ],
+    "holds": [],
+    "proofUrl": ""
+  },
+  {
+    "slug": "2026-07-01",
+    "date": "2026-07-01",
+    "title": "2026-07-01：交易执行记录",
+    "phase": "已执行",
+    "publishedAt": "2026-06-27",
+    "executedAt": "2026-07-01",
+    "netValue": null,
+    "weeklyReturnPct": null,
+    "cumulativeReturnPct": null,
+    "spyReturnPct": null,
+    "qqqReturnPct": null,
+    "buys": [
+      "IAU"
+    ],
+    "sells": [],
+    "holds": [],
+    "proofUrl": ""
+  }
+]

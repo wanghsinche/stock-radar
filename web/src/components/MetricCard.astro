@@ -1,0 +1,15 @@
+---
+interface Props {
+  label: string;
+  value: string;
+  subvalue?: string;
+  tone?: string;
+}
+
+const { label, value, subvalue = '', tone = '' } = Astro.props;
+---
+<div class="card">
+  <div class="label">{label}</div>
+  <div class:list={["value", tone]}>{value}</div>
+  {subvalue && <div class="subvalue">{subvalue}</div>}
+</div>

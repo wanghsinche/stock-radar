@@ -7,4 +7,9 @@ logs/
 config.yaml
 config_local.yaml
 reports/
-data/
+/data/
+web/node_modules/
+web/dist/
+web/.astro/
+proofs/raw/
+webull_trade_sdk.log.*

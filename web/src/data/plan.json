@@ -1,0 +1,13 @@
+{
+  "active": false,
+  "status": "暂无策略公布",
+  "generatedAt": null,
+  "signalDate": null,
+  "executionDate": null,
+  "mode": null,
+  "nQualified": null,
+  "portfolioValue": null,
+  "buyList": [],
+  "sellList": [],
+  "holdList": []
+}

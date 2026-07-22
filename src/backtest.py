@@ -106,6 +106,16 @@ def detect_bull_bear_windows(close, window=120):
     return bull, bear
 
 
+def _weekly_signal_dates(index):
+    """Return each week's last available trading day for Friday-close signals."""
+    dates = []
+    marker = pd.Series(1, index=index)
+    for _, group in marker.groupby(pd.Grouper(freq="W-FRI")):
+        if not group.empty:
+            dates.append(group.index[-1])
+    return pd.DatetimeIndex(dates)
+
+
 def qualify_at_date(close, symbols, idx, high_window=20, rank_window=120, recent_days=5):
     if idx < max(high_window, rank_window):
         return []
@@ -139,14 +149,11 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
     if end_date is None:
         end_date = close.index[-1]
 
-    dates = close.resample("W-FRI").last().index
-    dates = [d for d in dates if start_date <= d <= end_date and d in close.index]
+    dates = [d for d in _weekly_signal_dates(close.index) if start_date <= d <= end_date]
     if len(dates) < 2:
         return None
 
     date_to_idx = {d: i for i, d in enumerate(close.index)}
-    friday_to_next = {dates[i]: dates[i + 1] for i in range(len(dates) - 1)}
-
     spy_sma = close["SPY"].rolling(reentry_spy_ma).mean()
 
     initial_capital = buy_top * initial_cash_per_stock
@@ -166,7 +173,7 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
     budget_year = None
 
     for friday in dates:
-        if friday not in friday_to_next:
+        if date_to_idx[friday] + 1 >= len(close.index):
             break
         idx = date_to_idx[friday]
         spy_price = close.iloc[idx]["SPY"]
@@ -194,7 +201,7 @@ def run_backtest(close, open_prices, symbols, name_map, start_date=None, end_dat
         trading_mode = "spy" if spy_mode else "stocks"
 
         # --- execution price: next trading day open + slippage ---
-        exec_idx = min(idx + 1, len(close) - 1)
+        exec_idx = idx + 1
         exec_date = close.index[exec_idx]
 
         def _exec_price(sym, is_buy):

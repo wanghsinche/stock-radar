@@ -45,7 +45,7 @@ def _load_market_data_config() -> dict:
 
 def get_provider_name(provider: str | None = None) -> str:
     cfg = _load_market_data_config()
-    value = provider or os.getenv("MARKET_DATA_PROVIDER") or cfg.get("provider") or "lse"
+    value = provider or os.getenv("MARKET_DATA_PROVIDER") or cfg.get("provider") or "yahoo"
     return str(value).strip().lower()
 
 

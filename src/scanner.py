@@ -4,10 +4,15 @@ SP500 20日新高雷达 — 筛选过去20日创20日新高的股票（新高日
 
 from datetime import datetime, timedelta
 from io import StringIO
+import os
+import sys
 
 import pandas as pd
 import requests
-import yfinance as yf
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+from src.market_data import get_provider_name, load_daily_prices
 
 _SP500_URL = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 _HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"}
@@ -78,17 +83,9 @@ def scan_top_strong(top_n: int = 20) -> pd.DataFrame:
     end = datetime.today()
     start = end - timedelta(days=260)
 
-    print(f"  Downloading {len(symbols)} tickers (last 260 days)...")
-    data = yf.download(
-        symbols,
-        start=start.strftime("%Y-%m-%d"),
-        end=end.strftime("%Y-%m-%d"),
-        progress=False,
-        auto_adjust=True,
-    )
-    close = data["Close"].dropna(axis=1, how="all")
-    if isinstance(close.columns, pd.MultiIndex):
-        close = close.droplevel(0, axis=1)
+    print(f"  Downloading {len(symbols)} tickers (last 260 days) via {get_provider_name()}...")
+    prices = load_daily_prices(list(set(symbols + ["SPY"])), start, end)
+    close = prices.close.dropna(axis=1, how="all")
 
     qualifiers = qualify_20day_highs(close, symbols)
     print(f"  ✓ {len(qualifiers)} stocks qualified (new 20-day high this week)")

@@ -13,12 +13,12 @@ import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import yfinance as yf
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.scanner import fetch_sp500_constituents
 from src.scanner import qualify_20day_highs
+from src.market_data import get_provider_name, load_daily_prices
 from src.trading import (
     calc_buy_count,
     calc_sell_list,
@@ -56,19 +56,11 @@ def _fmt_usd(v):
 def _load_data(symbols, years=5, warmup_days=_WARMUP_DAYS):
     end = datetime.today()
     start = end - timedelta(days=years * 370 + warmup_days)
-    print(f"  Downloading {len(symbols)} tickers ({years} years)...")
-    data = yf.download(
-        list(set(symbols + ["SPY"])),
-        start=start.strftime("%Y-%m-%d"),
-        end=end.strftime("%Y-%m-%d"),
-        progress=False,
-        auto_adjust=True,
-    )
-    close = data["Close"].dropna(axis=1, how="all")
-    open_prices = data["Open"].dropna(axis=1, how="all")
-    if isinstance(close.columns, pd.MultiIndex):
-        close = close.droplevel(0, axis=1)
-        open_prices = open_prices.droplevel(0, axis=1)
+    all_symbols = list(set(symbols + ["SPY"]))
+    print(f"  Downloading {len(all_symbols)} tickers ({years} years) via {get_provider_name()}...")
+    prices = load_daily_prices(all_symbols, start, end)
+    close = prices.close.dropna(axis=1, how="all")
+    open_prices = prices.open.dropna(axis=1, how="all")
     common = close.columns.intersection(open_prices.columns)
     close = close[common]
     open_prices = open_prices[common]

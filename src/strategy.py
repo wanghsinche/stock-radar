@@ -24,6 +24,7 @@ BEIJING = timezone(timedelta(hours=8))
 from src.scanner import fetch_sp500_constituents, qualify_20day_highs
 from src.notifier import send_telegram, format_message
 from src.holiday import next_trading_day
+from src.market_data import get_provider_name, load_daily_prices
 from src.trading import (
     calc_buy_count,
     calc_sell_list,
@@ -187,18 +188,10 @@ def main():
 
     end = beijing_now
     start = end - timedelta(days=260)
-    print(f"  Downloading {len(symbols)} tickers...")
-    import yfinance as yf
-    data = yf.download(
-        list(set(symbols + ["SPY"])),
-        start=start.strftime("%Y-%m-%d"),
-        end=end.strftime("%Y-%m-%d"),
-        progress=False,
-        auto_adjust=True,
-    )
-    close = data["Close"].dropna(axis=1, how="all")
-    if isinstance(close.columns, pd.MultiIndex):
-        close = close.droplevel(0, axis=1)
+    all_symbols = list(set(symbols + ["SPY"]))
+    print(f"  Downloading {len(all_symbols)} tickers via {get_provider_name()}...")
+    prices = load_daily_prices(all_symbols, start, end)
+    close = prices.close.dropna(axis=1, how="all")
 
     signal_date = _last_completed_week_signal_date(close.index, beijing_now.date())
     close = close.loc[:signal_date]

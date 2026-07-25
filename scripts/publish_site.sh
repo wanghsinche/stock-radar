@@ -16,7 +16,6 @@ fi
 
 git add \
   web/package.json \
-  web/package-lock.json \
   web/astro.config.mjs \
   web/tsconfig.json \
   web/README.md \

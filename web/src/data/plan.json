@@ -1,13 +1,34 @@
 {
-  "active": false,
-  "status": "暂无策略公布",
-  "generatedAt": null,
-  "signalDate": null,
-  "executionDate": null,
-  "mode": null,
-  "nQualified": null,
-  "portfolioValue": null,
-  "buyList": [],
-  "sellList": [],
-  "holdList": []
+  "active": true,
+  "status": "策略公布",
+  "generatedAt": "2026-07-25",
+  "signalDate": "2026-07-24",
+  "executionDate": "2026-07-27",
+  "mode": "进攻中",
+  "nQualified": 137,
+  "portfolioValue": 21431.11,
+  "buyList": [
+    "DVA",
+    "UNH",
+    "CVS",
+    "URI",
+    "CASY",
+    "CSX",
+    "TRGP"
+  ],
+  "sellList": [
+    "ADBE",
+    "AJG",
+    "GDDY",
+    "JKHY",
+    "PANW",
+    "PYPL",
+    "TECH",
+    "VEEV"
+  ],
+  "holdList": [
+    "MPC",
+    "VLO",
+    "PSX"
+  ]
 }

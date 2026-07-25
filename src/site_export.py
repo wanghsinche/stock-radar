@@ -19,6 +19,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
 import yaml
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -256,6 +257,8 @@ def _update_weekly_from_trades(
     trades: list[dict[str, Any]],
     net_value: float | None,
     cumulative_return_pct: float | None,
+    spy_return_pct: float | None = None,
+    qqq_return_pct: float | None = None,
 ) -> None:
     if not trades:
         return
@@ -279,11 +282,31 @@ def _update_weekly_from_trades(
 
     latest_date = max(grouped)
     weekly = []
-    for date_str in sorted(grouped, reverse=True):
+    prev_net_value = None
+    for idx, date_str in enumerate(sorted(grouped, reverse=True)):
         old = existing.get(date_str, {})
         is_latest = date_str == latest_date
         buys = grouped[date_str]["buys"]
         sells = grouped[date_str]["sells"]
+
+        this_net = round(net_value, 2) if is_latest and net_value is not None else old.get("netValue")
+        if is_latest:
+            weekly_ret = None
+            if this_net is not None:
+                all_slugs = list(dict.fromkeys(
+                    [s for s in sorted(grouped, reverse=True)] +
+                    [s for s in sorted(existing, reverse=True)]
+                ))
+                if len(all_slugs) > 1:
+                    prev_slug = all_slugs[1]
+                    prev_entry = existing.get(prev_slug) or next(
+                        (w for w in weekly if w["slug"] == prev_slug), None
+                    )
+                    if prev_entry and prev_entry.get("netValue"):
+                        weekly_ret = round((this_net / prev_entry["netValue"] - 1) * 100, 2)
+        else:
+            weekly_ret = old.get("weeklyReturnPct")
+
         weekly.append({
             "slug": date_str,
             "date": date_str,
@@ -291,14 +314,14 @@ def _update_weekly_from_trades(
             "phase": "已执行",
             "publishedAt": old.get("publishedAt") or _previous_saturday(date_str),
             "executedAt": date_str,
-            "netValue": round(net_value, 2) if is_latest and net_value is not None else None,
-            "weeklyReturnPct": None,
-            "cumulativeReturnPct": cumulative_return_pct if is_latest else None,
-            "spyReturnPct": None,
-            "qqqReturnPct": None,
+            "netValue": this_net,
+            "weeklyReturnPct": weekly_ret,
+            "cumulativeReturnPct": cumulative_return_pct if is_latest else old.get("cumulativeReturnPct"),
+            "spyReturnPct": spy_return_pct if is_latest else old.get("spyReturnPct"),
+            "qqqReturnPct": qqq_return_pct if is_latest else old.get("qqqReturnPct"),
             "buys": sorted(buys),
             "sells": sorted(sells),
-            "holds": [],
+            "holds": old.get("holds", []),
             "proofUrl": old.get("proofUrl", ""),
         })
 
@@ -429,22 +452,95 @@ def _fetch_webull(config_path: Path, order_days: int) -> tuple[float | None, lis
     return net_value, positions, sorted(trades, key=lambda item: item["date"], reverse=True)
 
 
+def _fetch_benchmark_prices(site_data_dir: Path, first_date: str | None) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    try:
+        from src.market_data import load_daily_prices
+
+        today = date.today()
+        lookback_start = today - timedelta(days=40)
+        if first_date:
+            try:
+                lookback_start = datetime.fromisoformat(first_date).date() - timedelta(days=5)
+            except (ValueError, TypeError):
+                pass
+
+        mkdata = load_daily_prices(["SPY", "QQQ"], lookback_start, today)
+
+        for bench in ("SPY", "QQQ"):
+            if bench in mkdata.close.columns:
+                prices = mkdata.close[bench].dropna()
+                if len(prices) >= 2:
+                    if first_date:
+                        first = datetime.fromisoformat(first_date).date()
+                        mask = prices.index >= pd.Timestamp(first)
+                        period = prices[mask]
+                        if len(period) < 2:
+                            period = prices
+                    else:
+                        period = prices
+                    p_first = period.iloc[0]
+                    p_last = period.iloc[-1]
+                    ret = round((p_last / p_first - 1) * 100, 2)
+                    result[f"{bench.lower()}ReturnPct"] = ret
+    except Exception as exc:
+        print(f"Warning: failed to fetch benchmark prices: {exc}")
+    return result
+
+
 def export_live(config_path: Path, site_data_dir: Path, initial_capital: float | None, order_days: int) -> None:
     net_value, holdings, trades = _fetch_webull(config_path, order_days)
     latest = _load_site_file("latest.json", {}, site_data_dir)
 
     if net_value is not None:
+        cumulative = round((net_value / initial_capital - 1) * 100, 2) if initial_capital else None
         latest["asOf"] = date.today().isoformat()
         latest["netValue"] = round(net_value, 2)
         latest["initialCapital"] = initial_capital
-        latest["cumulativeReturnPct"] = round((net_value / initial_capital - 1) * 100, 2) if initial_capital else None
+        latest["cumulativeReturnPct"] = cumulative
+
+        perf = _read_json(DATA_DIR / "performance_history.json", [])
+
+        drawdowns = [p["drawdown_pct"] for p in perf if isinstance(p.get("drawdown_pct"), (int, float))]
+        latest["maxDrawdownPct"] = round(min(drawdowns), 2) if drawdowns else cumulative
+
+        latest["ytdReturnPct"] = cumulative
+
+        latest["weeklyReturnPct"] = None
+
+        if not latest.get("firstDate"):
+            latest["firstDate"] = date.today().isoformat()
+        try:
+            first = datetime.fromisoformat(latest["firstDate"]).date()
+            latest["publicDays"] = (date.today() - first).days
+        except (ValueError, TypeError):
+            pass
+
+        bench = _fetch_benchmark_prices(site_data_dir, latest.get("firstDate"))
+        spy_ret = bench.get("spyReturnPct")
+        qqq_ret = bench.get("qqqReturnPct")
+        if spy_ret is not None:
+            latest["spyReturnPct"] = spy_ret
+            latest["spyRelativePct"] = round(cumulative - spy_ret, 2) if cumulative is not None else None
+        if qqq_ret is not None:
+            latest["qqqReturnPct"] = qqq_ret
+            latest["qqqRelativePct"] = round(cumulative - qqq_ret, 2) if cumulative is not None else None
+
+        strategy_file = _latest_strategy_file()
+        if strategy_file:
+            strategy = _read_json(strategy_file, {})
+            latest["status"] = _mode_label(strategy.get("mode"))
+            latest["statusNote"] = _strategy_note(strategy)
+
     cumulative = latest.get("cumulativeReturnPct")
+    spy_ret = latest.get("spyReturnPct") if net_value is not None else None
+    qqq_ret = latest.get("qqqReturnPct") if net_value is not None else None
 
     if holdings:
         _save_site_file("holdings.json", holdings, site_data_dir)
     if trades:
         _save_site_file("trades.json", trades, site_data_dir)
-        _update_weekly_from_trades(site_data_dir, trades, net_value, cumulative)
+        _update_weekly_from_trades(site_data_dir, trades, net_value, cumulative, spy_ret, qqq_ret)
     _save_site_file("latest.json", latest, site_data_dir)
     print(f"Exported live Webull data -> {site_data_dir}")
 

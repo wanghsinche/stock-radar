@@ -1,112 +1,102 @@
 [
   {
-    "symbol": "ADBE",
-    "name": "ADBE",
-    "quantity": 8.0,
-    "marketValue": 1800.0,
-    "weightPct": 8.67,
-    "unrealizedPnl": -54.95,
-    "unrealizedPnlPct": -2.96,
-    "holdingDays": 5
-  },
-  {
-    "symbol": "VEEV",
-    "name": "VEEV",
-    "quantity": 10.0,
-    "marketValue": 1861.0,
-    "weightPct": 8.96,
-    "unrealizedPnl": -72.3,
-    "unrealizedPnlPct": -3.74,
-    "holdingDays": 5
+    "symbol": "CSX",
+    "name": "CSX",
+    "quantity": 40.0,
+    "marketValue": 2094.8,
+    "weightPct": 11.24,
+    "unrealizedPnl": -10.0,
+    "unrealizedPnlPct": -0.48,
+    "holdingDays": 0
   },
   {
     "symbol": "PSX",
     "name": "PSX",
     "quantity": 9.0,
-    "marketValue": 1857.24,
-    "weightPct": 8.95,
-    "unrealizedPnl": -2.84,
-    "unrealizedPnlPct": -0.15,
-    "holdingDays": 5
+    "marketValue": 1865.7,
+    "weightPct": 10.01,
+    "unrealizedPnl": 5.62,
+    "unrealizedPnlPct": 0.3,
+    "holdingDays": 7
   },
   {
-    "symbol": "TECH",
-    "name": "TECH",
-    "quantity": 28.0,
-    "marketValue": 2004.8,
-    "weightPct": 9.66,
-    "unrealizedPnl": 26.05,
-    "unrealizedPnlPct": 1.32,
-    "holdingDays": 19
+    "symbol": "DVA",
+    "name": "DVA",
+    "quantity": 9.0,
+    "marketValue": 2142.09,
+    "weightPct": 11.5,
+    "unrealizedPnl": 31.53,
+    "unrealizedPnlPct": 1.49,
+    "holdingDays": 0
+  },
+  {
+    "symbol": "UNH",
+    "name": "UNH",
+    "quantity": 5.0,
+    "marketValue": 2075.0,
+    "weightPct": 11.14,
+    "unrealizedPnl": -21.33,
+    "unrealizedPnlPct": -1.02,
+    "holdingDays": 0
   },
   {
     "symbol": "MPC",
     "name": "MPC",
     "quantity": 6.0,
-    "marketValue": 1856.76,
-    "weightPct": 8.94,
-    "unrealizedPnl": -22.09,
-    "unrealizedPnlPct": -1.18,
-    "holdingDays": 5
+    "marketValue": 1862.58,
+    "weightPct": 10.0,
+    "unrealizedPnl": -16.27,
+    "unrealizedPnlPct": -0.87,
+    "holdingDays": 7
+  },
+  {
+    "symbol": "URI",
+    "name": "URI",
+    "quantity": 1.0,
+    "marketValue": 1116.47,
+    "weightPct": 5.99,
+    "unrealizedPnl": -17.11,
+    "unrealizedPnlPct": -1.51,
+    "holdingDays": 0
+  },
+  {
+    "symbol": "TRGP",
+    "name": "TRGP",
+    "quantity": 7.0,
+    "marketValue": 1926.19,
+    "weightPct": 10.34,
+    "unrealizedPnl": -8.44,
+    "unrealizedPnlPct": -0.44,
+    "holdingDays": 0
   },
   {
     "symbol": "VLO",
     "name": "VLO",
     "quantity": 6.0,
-    "marketValue": 1823.7,
-    "weightPct": 8.78,
-    "unrealizedPnl": -25.38,
-    "unrealizedPnlPct": -1.37,
-    "holdingDays": 5
+    "marketValue": 1822.08,
+    "weightPct": 9.78,
+    "unrealizedPnl": -27.0,
+    "unrealizedPnlPct": -1.46,
+    "holdingDays": 7
   },
   {
-    "symbol": "PANW",
-    "name": "PANW",
-    "quantity": 6.0,
-    "marketValue": 1947.3,
-    "weightPct": 9.38,
-    "unrealizedPnl": -2.05,
-    "unrealizedPnlPct": -0.11,
-    "holdingDays": 12
+    "symbol": "CASY",
+    "name": "CASY",
+    "quantity": 2.0,
+    "marketValue": 1714.4,
+    "weightPct": 9.2,
+    "unrealizedPnl": 17.48,
+    "unrealizedPnlPct": 1.03,
+    "holdingDays": 0
   },
   {
-    "symbol": "AJG",
-    "name": "AJG",
-    "quantity": 7.0,
-    "marketValue": 1734.39,
-    "weightPct": 8.35,
-    "unrealizedPnl": -10.08,
-    "unrealizedPnlPct": -0.58,
-    "holdingDays": 19
-  },
-  {
-    "symbol": "GDDY",
-    "name": "GDDY",
-    "quantity": 21.0,
-    "marketValue": 1956.57,
-    "weightPct": 9.42,
-    "unrealizedPnl": -9.7,
-    "unrealizedPnlPct": -0.49,
-    "holdingDays": 5
-  },
-  {
-    "symbol": "PYPL",
-    "name": "PYPL",
-    "quantity": 35.0,
-    "marketValue": 1962.45,
-    "weightPct": 9.45,
-    "unrealizedPnl": -8.05,
-    "unrealizedPnlPct": -0.41,
-    "holdingDays": 5
-  },
-  {
-    "symbol": "JKHY",
-    "name": "JKHY",
-    "quantity": 13.0,
-    "marketValue": 1957.54,
-    "weightPct": 9.43,
-    "unrealizedPnl": -7.15,
-    "unrealizedPnlPct": -0.36,
-    "holdingDays": 5
+    "symbol": "CVS",
+    "name": "CVS",
+    "quantity": 19.0,
+    "marketValue": 2013.62,
+    "weightPct": 10.81,
+    "unrealizedPnl": -14.06,
+    "unrealizedPnlPct": -0.69,
+    "holdingDays": 0
   }
 ]

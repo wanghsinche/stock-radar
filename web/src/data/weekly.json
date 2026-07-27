@@ -1,5 +1,39 @@
 [
   {
+    "slug": "2026-07-27",
+    "date": "2026-07-27",
+    "title": "2026-07-27：交易执行记录",
+    "phase": "已执行",
+    "publishedAt": "2026-07-25",
+    "executedAt": "2026-07-27",
+    "netValue": 21546.83,
+    "weeklyReturnPct": 0.52,
+    "cumulativeReturnPct": -5.51,
+    "spyReturnPct": -1.27,
+    "qqqReturnPct": -2.46,
+    "buys": [
+      "CASY",
+      "CSX",
+      "CVS",
+      "DVA",
+      "TRGP",
+      "UNH",
+      "URI"
+    ],
+    "sells": [
+      "ADBE",
+      "AJG",
+      "GDDY",
+      "JKHY",
+      "PANW",
+      "PYPL",
+      "TECH",
+      "VEEV"
+    ],
+    "holds": [],
+    "proofUrl": ""
+  },
+  {
     "slug": "2026-07-20",
     "date": "2026-07-20",
     "title": "2026-07-20：交易执行记录",

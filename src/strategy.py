@@ -11,6 +11,7 @@
 import json
 import os
 import sys
+import fcntl
 from datetime import datetime, timedelta, timezone
 
 import pandas as pd
@@ -171,6 +172,15 @@ def load_strategy(date_str: str = None) -> dict:
 
 
 def main():
+    # 单实例锁：防止 pm2 cron 重复触发导致重复生成/重复推送
+    lock_path = "/tmp/stock-radar-strategy.lock"
+    lock_file = open(lock_path, "w")
+    try:
+        fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        print(f"  ⏭️ Another gen-strategy already running (lock {lock_path}), exiting")
+        return
+
     load_dotenv()
     config = load_config()
     initial_cash_per_stock = 2000

@@ -89,13 +89,35 @@ def next_trading_day(d: date) -> date:
 
 def us_open_time_beijing(query_date: date = None) -> datetime:
     """Return Beijing datetime for 09:30 ET on query_date."""
+    return us_time_beijing(9, 30, query_date)
+
+
+def us_time_beijing(hour: int, minute: int = 0, query_date: date = None) -> datetime:
+    """Return the Beijing wall-clock datetime for hour:minute ET on query_date."""
     if query_date is None:
         query_date = date.today()
     et = ZoneInfo("America/New_York")
     bj = ZoneInfo("Asia/Shanghai")
-    # 09:30 ET on query_date
-    open_dt = datetime(query_date.year, query_date.month, query_date.day, 9, 30, tzinfo=et)
-    return open_dt.astimezone(bj)
+    local = datetime(query_date.year, query_date.month, query_date.day, hour, minute, tzinfo=et)
+    return local.astimezone(bj)
+
+
+def sleep_until_et(hour: int, minute: int, max_wait: int = 3600) -> bool:
+    """Sleep until hour:minute ET today. Returns False if wait exceeds max_wait."""
+    import time
+
+    now_bj = datetime.now(ZoneInfo("Asia/Shanghai"))
+    target_bj = us_time_beijing(hour, minute)
+    if now_bj >= target_bj:
+        return True
+    wait_sec = (target_bj - now_bj).total_seconds()
+    if wait_sec > max_wait:
+        print(f"  ⏳ Too long to wait ({wait_sec:.0f}s > {max_wait}s), skipping")
+        return False
+    print(f"  ⏳ Sleeping {wait_sec:.0f}s until {hour:02d}:{minute:02d} ET "
+          f"({target_bj.strftime('%H:%M')} Beijing)")
+    time.sleep(wait_sec)
+    return True
 
 
 def is_us_market_open_today() -> bool:

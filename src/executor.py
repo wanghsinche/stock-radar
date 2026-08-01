@@ -282,6 +282,14 @@ def main():
 
     save_trade_log(trade_log)
 
+    # 5b. Wait for market orders to fill, then sync real positions/cash.
+    #     Without this, the post-trade snapshot may be taken before buys
+    #     (e.g. TRGP) have filled, corrupting next week's valuation.
+    if not paper:
+        from src.holiday import sleep_until_et
+        print(f"\n  ⏳ 等待买单成交，09:40 ET 再同步真实持仓/现金 ...")
+        sleep_until_et(9, 40, max_wait=900)
+
     # 6. Save positions state for next strategy run
     new_positions = {}
     for s in webull_positions:
@@ -308,12 +316,15 @@ def main():
             live_pos = get_positions(trade_client, account_id)
             if live_pos:
                 pos_state["positions"] = live_pos
+                print(f"  ✓ 已同步 Webull 真实持仓 ({len(live_pos)} 只): {', '.join(sorted(live_pos))}")
             else:
                 # Fallback: use estimated positions
+                print(f"  ⚠️ Webull 返回空持仓，使用估算持仓")
                 pos_state["positions"] = new_positions
             live_bp = get_usd_buying_power(trade_client, account_id)
             if live_bp > 0:
                 pos_state["cash"] = live_bp
+                print(f"  ✓ 已同步 Webull 真实现金: ${live_bp:,.2f}")
         else:
             pos_state["positions"] = new_positions
             pos_state["cash"] = strategy.get("cash_available", 0) - actual_buy_cost

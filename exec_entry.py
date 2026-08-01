@@ -1,41 +1,47 @@
 """
-pm2 wrapper — 自适应 DST + 假日检查
+pm2 wrapper — 自适应 DST + 假日检查 + 单实例锁
 ecosystem 设 Mon 13:30 UTC (21:30 北京)
 - 如果还没到 09:30 ET → sleep
 - 如果是假日 → 跳过 + TG 通知
+- 单实例锁防止 pm2 cron 重复触发导致重复下单
 """
 
-import time
+import fcntl
+import os
 import sys
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
 # Add project root
-import os
 sys.path.insert(0, os.path.dirname(__file__))
 
-from src.holiday import is_us_market_holiday, us_open_time_beijing
+from src.holiday import is_us_market_holiday, sleep_until_et
+
+_LOCK_PATH = "/tmp/stock-radar-exec.lock"
 
 
-def wait_until_open():
-    """Sleep until 09:30 ET today."""
-    now_bj = datetime.now(ZoneInfo("Asia/Shanghai"))
-    open_bj = us_open_time_beijing(date.today())
-
-    if now_bj < open_bj:
-        wait_sec = (open_bj - now_bj).total_seconds()
-        print(f"  ⏳ Waiting {wait_sec:.0f}s until US open (09:30 ET = {open_bj.strftime('%H:%M')} Beijing)")
-        if wait_sec > 3600:
-            print(f"     Too long to wait (>1h), will exit. Cron should retry next week.")
-            return False
-        time.sleep(wait_sec)
-    return True
+def acquire_lock():
+    """Acquire a non-blocking exclusive lock. Returns the file handle or None."""
+    lock_file = open(_LOCK_PATH, "w")
+    try:
+        fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        lock_file.close()
+        return None
+    lock_file.write(str(os.getpid()))
+    lock_file.flush()
+    return lock_file
 
 
 def main():
     print(f"\n{'=' * 50}")
     print(f"  🔄 exec_entry — {datetime.now().isoformat()}")
     print(f"{'=' * 50}")
+
+    lock = acquire_lock()
+    if lock is None:
+        print(f"  ⏭️ Another exec-trade already running (lock {_LOCK_PATH}), exiting")
+        return
 
     today = date.today()
 
@@ -49,12 +55,13 @@ def main():
         print(f"  ⏭️ US market holiday today ({today}), skipping")
         return
 
-    # Wait until open
-    if not wait_until_open():
-        print(f"  ⏭️ Exiting, cron will retry next week")
+    # Wait until open (09:30 ET)
+    if not sleep_until_et(9, 30, max_wait=3600):
+        print(f"  ⏭️ Too far from US open, cron will retry next week")
         return
 
-    # Execute
+    # Execute (places orders at open, then sleeps until 09:40 ET inside to
+    # let market orders fill before syncing real positions)
     from src.executor import main as executor_main
     executor_main()
 

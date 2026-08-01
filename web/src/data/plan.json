@@ -1,34 +1,35 @@
 {
   "active": true,
   "status": "策略公布",
-  "generatedAt": "2026-07-25",
-  "signalDate": "2026-07-24",
-  "executionDate": "2026-07-27",
+  "generatedAt": "2026-08-01",
+  "signalDate": "2026-07-31",
+  "executionDate": "2026-08-03",
   "mode": "进攻中",
-  "nQualified": 137,
-  "portfolioValue": 21431.11,
+  "nQualified": 241,
+  "portfolioValue": 21535.62,
   "buyList": [
-    "DVA",
-    "UNH",
-    "CVS",
-    "URI",
-    "CASY",
-    "CSX",
-    "TRGP"
+    "NTAP",
+    "GRMN",
+    "XYZ",
+    "HPQ",
+    "PYPL",
+    "APA",
+    "HST",
+    "NUE",
+    "DOC"
   ],
   "sellList": [
-    "ADBE",
-    "AJG",
-    "GDDY",
-    "JKHY",
-    "PANW",
-    "PYPL",
-    "TECH",
-    "VEEV"
+    "CASY",
+    "CSX",
+    "CVS",
+    "MPC",
+    "PSX",
+    "TRGP",
+    "UNH",
+    "URI",
+    "VLO"
   ],
   "holdList": [
-    "MPC",
-    "VLO",
-    "PSX"
+    "DVA"
   ]
 }

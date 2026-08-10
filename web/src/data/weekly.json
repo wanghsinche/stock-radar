@@ -1,5 +1,32 @@
 [
   {
+    "slug": "2026-08-10",
+    "date": "2026-08-10",
+    "title": "2026-08-10：交易执行记录",
+    "phase": "已执行",
+    "publishedAt": "2026-08-08",
+    "executedAt": "2026-08-10",
+    "netValue": 21564.67,
+    "weeklyReturnPct": 0.65,
+    "cumulativeReturnPct": -5.43,
+    "spyReturnPct": 3.42,
+    "qqqReturnPct": 1.92,
+    "buys": [
+      "CRWD",
+      "DELL",
+      "HPE",
+      "PANW"
+    ],
+    "sells": [
+      "APA",
+      "DOC",
+      "DVA",
+      "HST"
+    ],
+    "holds": [],
+    "proofUrl": ""
+  },
+  {
     "slug": "2026-08-03",
     "date": "2026-08-03",
     "title": "2026-08-03：交易执行记录",

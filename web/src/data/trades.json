@@ -1,5 +1,93 @@
 [
   {
+    "date": "2026-08-17",
+    "action": "BUY",
+    "symbol": "STX",
+    "quantity": 2.0,
+    "price": 983.59,
+    "amount": 1967.17,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-08-17",
+    "action": "BUY",
+    "symbol": "MRVL",
+    "quantity": 9.0,
+    "price": 228.2,
+    "amount": 2053.8,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-08-17",
+    "action": "SELL",
+    "symbol": "NUE",
+    "quantity": 8.0,
+    "price": 267.0,
+    "amount": 2136.0,
+    "realizedPnl": 86.32,
+    "realizedPnlPct": 4.21,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-08-17",
+    "action": "BUY",
+    "symbol": "SNDK",
+    "quantity": 1.0,
+    "price": 1706.51,
+    "amount": 1706.51,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-08-17",
+    "action": "SELL",
+    "symbol": "PYPL",
+    "quantity": 37.0,
+    "price": 60.82,
+    "amount": 2250.3,
+    "realizedPnl": 98.42,
+    "realizedPnlPct": 4.57,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-08-17",
+    "action": "SELL",
+    "symbol": "GRMN",
+    "quantity": 7.0,
+    "price": 308.5,
+    "amount": 2159.5,
+    "realizedPnl": 71.47,
+    "realizedPnlPct": 3.42,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-08-17",
+    "action": "BUY",
+    "symbol": "MPC",
+    "quantity": 6.0,
+    "price": 358.57,
+    "amount": 2151.42,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-08-17",
+    "action": "SELL",
+    "symbol": "XYZ",
+    "quantity": 26.0,
+    "price": 81.63,
+    "amount": 2122.38,
+    "realizedPnl": 2.86,
+    "realizedPnlPct": 0.13,
+    "note": "模型交易"
+  },
+  {
     "date": "2026-08-10",
     "action": "SELL",
     "symbol": "APA",

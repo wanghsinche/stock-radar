@@ -1,5 +1,32 @@
 [
   {
+    "slug": "2026-08-17",
+    "date": "2026-08-17",
+    "title": "2026-08-17：交易执行记录",
+    "phase": "已执行",
+    "publishedAt": "2026-08-15",
+    "executedAt": "2026-08-17",
+    "netValue": 21840.23,
+    "weeklyReturnPct": 1.28,
+    "cumulativeReturnPct": -4.22,
+    "spyReturnPct": 3.83,
+    "qqqReturnPct": 3.05,
+    "buys": [
+      "MPC",
+      "MRVL",
+      "SNDK",
+      "STX"
+    ],
+    "sells": [
+      "GRMN",
+      "NUE",
+      "PYPL",
+      "XYZ"
+    ],
+    "holds": [],
+    "proofUrl": ""
+  },
+  {
     "slug": "2026-08-10",
     "date": "2026-08-10",
     "title": "2026-08-10：交易执行记录",

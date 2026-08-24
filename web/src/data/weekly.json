@@ -1,5 +1,36 @@
 [
   {
+    "slug": "2026-08-24",
+    "date": "2026-08-24",
+    "title": "2026-08-24：交易执行记录",
+    "phase": "已执行",
+    "publishedAt": "2026-08-22",
+    "executedAt": "2026-08-24",
+    "netValue": 20108.57,
+    "weeklyReturnPct": -7.93,
+    "cumulativeReturnPct": -11.82,
+    "spyReturnPct": 2.41,
+    "qqqReturnPct": 0.57,
+    "buys": [
+      "CRL",
+      "FLEX",
+      "MRNA",
+      "MU",
+      "PSX",
+      "VLO"
+    ],
+    "sells": [
+      "CRWD",
+      "DELL",
+      "HPE",
+      "HPQ",
+      "NTAP",
+      "PANW"
+    ],
+    "holds": [],
+    "proofUrl": ""
+  },
+  {
     "slug": "2026-08-17",
     "date": "2026-08-17",
     "title": "2026-08-17：交易执行记录",
@@ -147,7 +178,6 @@
       "VLO"
     ],
     "sells": [
-      "ADBE",
       "ANET",
       "AXON",
       "CRL",

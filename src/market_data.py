@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 import time
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Iterable
 
 import pandas as pd
@@ -83,13 +83,41 @@ def _normalize_matrix(df: pd.DataFrame, symbols: list[str]) -> pd.DataFrame:
 def _load_yahoo_daily_prices(symbols: list[str], start, end) -> PriceData:
     import yfinance as yf
 
-    data = yf.download(
+    start_str = _normalize_date(start)
+    end_str = _normalize_date(end)
+    end_ts = pd.Timestamp(end)
+
+    # Workaround for Yahoo bug: last day OHLC returns NaN (issue #2925)
+    # Download in two steps: bulk range, then single-day for the last day
+    day_before = (end_ts - timedelta(days=1)).strftime("%Y-%m-%d")
+    two_days_before = (end_ts - timedelta(days=2)).strftime("%Y-%m-%d")
+
+    data_main = yf.download(
         symbols,
-        start=_normalize_date(start),
-        end=_normalize_date(end),
+        start=start_str,
+        end=two_days_before,
         progress=False,
         auto_adjust=True,
     )
+
+    data_last = yf.download(
+        symbols,
+        start=day_before,
+        end=end_str,
+        progress=False,
+        auto_adjust=True,
+    )
+
+    # Merge: data_last takes precedence for overlapping dates
+    if not data_main.empty and not data_last.empty:
+        data = pd.concat([data_main, data_last])
+        data = data[~data.index.duplicated(keep="last")]
+        data = data.sort_index()
+    elif not data_last.empty:
+        data = data_last
+    else:
+        data = data_main
+
     if data.empty:
         empty = pd.DataFrame(columns=symbols)
         return PriceData(close=empty, open=empty)

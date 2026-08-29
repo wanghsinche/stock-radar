@@ -295,7 +295,7 @@ def main():
     for s in sell_list:
         if s in last.get("positions", {}):
             p = close[s].iloc[-1] if s in close.columns else 0
-            cash_available += last["positions"][s] * p if pd.notna(p) else 0
+            cash_available += last["positions"][s] * (p if pd.notna(p) else 0)
 
     remaining = cash_available
     can_buy_n = 0

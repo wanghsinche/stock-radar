@@ -1,32 +1,24 @@
 {
   "active": true,
   "status": "策略公布",
-  "generatedAt": "2026-08-22",
-  "signalDate": "2026-08-21",
-  "executionDate": "2026-08-24",
+  "generatedAt": "2026-08-29",
+  "signalDate": "2026-08-27",
+  "executionDate": "2026-08-31",
   "mode": "进攻中",
-  "nQualified": 163,
-  "portfolioValue": 20664.71,
-  "buyList": [
-    "MRNA",
-    "MU",
-    "FLEX",
-    "CRL",
-    "VLO",
-    "PSX"
-  ],
+  "nQualified": 0,
+  "portfolioValue": 20704.25,
+  "buyList": [],
   "sellList": [
-    "CRWD",
-    "DELL",
-    "HPE",
-    "HPQ",
-    "NTAP",
-    "PANW"
-  ],
-  "holdList": [
+    "CRL",
+    "FLEX",
+    "MPC",
+    "MRNA",
     "MRVL",
+    "MU",
+    "PSX",
     "SNDK",
     "STX",
-    "MPC"
-  ]
+    "VLO"
+  ],
+  "holdList": []
 }

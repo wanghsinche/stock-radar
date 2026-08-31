@@ -1,5 +1,33 @@
 [
   {
+    "slug": "2026-08-31",
+    "date": "2026-08-31",
+    "title": "2026-08-31：交易执行记录",
+    "phase": "已执行",
+    "publishedAt": "2026-08-29",
+    "executedAt": "2026-08-31",
+    "netValue": 20290.56,
+    "weeklyReturnPct": 0.91,
+    "cumulativeReturnPct": -11.02,
+    "spyReturnPct": 2.89,
+    "qqqReturnPct": 0.99,
+    "buys": [
+      "ABNB",
+      "HUM",
+      "IBKR",
+      "IQV"
+    ],
+    "sells": [
+      "FLEX",
+      "MRNA",
+      "MRVL",
+      "MU",
+      "SNDK"
+    ],
+    "holds": [],
+    "proofUrl": ""
+  },
+  {
     "slug": "2026-08-24",
     "date": "2026-08-24",
     "title": "2026-08-24：交易执行记录",
@@ -15,7 +43,6 @@
       "CRL",
       "FLEX",
       "MRNA",
-      "MU",
       "PSX",
       "VLO"
     ],
@@ -71,9 +98,7 @@
     "qqqReturnPct": 1.92,
     "buys": [
       "CRWD",
-      "DELL",
-      "HPE",
-      "PANW"
+      "DELL"
     ],
     "sells": [
       "APA",
@@ -108,14 +133,11 @@
       "XYZ"
     ],
     "sells": [
-      "CASY",
       "CSX",
       "CVS",
-      "MPC",
       "PSX",
       "TRGP",
       "UNH",
-      "URI",
       "VLO"
     ],
     "holds": [],
@@ -206,7 +228,6 @@
       "ANET",
       "AXON",
       "EXPE",
-      "PANW",
       "ZBRA"
     ],
     "sells": [
@@ -237,14 +258,11 @@
       "DASH",
       "ERIE",
       "GPC",
-      "HOOD",
       "MRNA",
       "TECH",
       "UAL"
     ],
-    "sells": [
-      "IAU"
-    ],
+    "sells": [],
     "holds": [],
     "proofUrl": ""
   },

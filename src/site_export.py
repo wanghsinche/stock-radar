@@ -15,6 +15,7 @@ import json
 import logging
 import os
 import sys
+import time
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -203,6 +204,69 @@ def _flatten_orders(raw_orders: Any) -> list[dict[str, Any]]:
     return flattened
 
 
+def _order_key(order: dict[str, Any], fallback: str) -> tuple:
+    symbol = _pick_symbol(order)
+    side = str(order.get("side") or order.get("action") or "").upper()
+    qty = _pick_float(order, ["filled_quantity", "filledQuantity", "total_quantity", "totalQuantity", "quantity", "qty"])
+    price = _pick_float(order, ["filled_price", "filledPrice", "avg_fill_price", "avgFilledPrice", "averagePrice", "price"])
+    return (
+        order.get("order_id") or order.get("orderId") or order.get("id") or "",
+        _sort_time_from_order(order, fallback),
+        side,
+        symbol,
+        round(qty or 0, 8),
+        round(price or 0, 8),
+    )
+
+
+def _fetch_order_history_pages(trade_client: Any, account_id: str, start: str, end: str) -> list[dict[str, Any]]:
+    page_size = 100
+    seen: set[tuple] = set()
+    orders: list[dict[str, Any]] = []
+    last_client_order_id = None
+
+    for page in range(1, 21):
+        if page > 1:
+            time.sleep(0.4)
+        try:
+            res = trade_client.order_v3.get_order_history(
+                account_id,
+                page_size,
+                start,
+                end,
+                last_client_order_id=last_client_order_id,
+            )
+        except Exception as exc:
+            print(f"Warning: failed to fetch order history page {page}: {exc}")
+            break
+        if res.status_code != 200:
+            print(f"Warning: order history page {page} failed: HTTP {res.status_code}")
+            break
+        page_orders = _flatten_orders(res.json())
+        if not page_orders:
+            break
+
+        new_count = 0
+        for order in page_orders:
+            key = _order_key(order, end)
+            if key in seen:
+                continue
+            seen.add(key)
+            orders.append(order)
+            new_count += 1
+
+        if len(page_orders) < page_size or new_count == 0:
+            break
+        last_client_order_id = (
+            page_orders[-1].get("client_order_id")
+            or page_orders[-1].get("clientOrderId")
+        )
+        if not last_client_order_id:
+            break
+
+    return orders
+
+
 def _attach_realized_pnl(trades: list[dict[str, Any]]) -> list[dict[str, Any]]:
     lots: dict[str, list[dict[str, float]]] = {}
     chronological = sorted(trades, key=lambda item: item.get("_sortTime", item["date"]))
@@ -239,8 +303,6 @@ def _attach_realized_pnl(trades: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if remaining > 1e-9:
             trade["note"] = "部分成本匹配"
 
-    for trade in trades:
-        trade.pop("_sortTime", None)
     return trades
 
 
@@ -406,35 +468,36 @@ def _fetch_webull(config_path: Path, order_days: int) -> tuple[float | None, lis
     start = (date.today() - timedelta(days=order_days)).isoformat()
     end = date.today().isoformat()
     try:
-        order_res = trade_client.order_v3.get_order_history(account_id, 100, start, end)
-        if order_res.status_code == 200:
-            for order in _flatten_orders(order_res.json()):
-                status = str(order.get("status") or order.get("order_status") or "").upper()
-                if status and "FILLED" not in status and "EXECUTED" not in status:
-                    continue
-                symbol = _pick_symbol(order)
-                qty = _pick_float(order, ["filled_quantity", "filledQuantity", "total_quantity", "totalQuantity", "quantity", "qty"])
-                price = _pick_float(order, ["filled_price", "filledPrice", "avg_fill_price", "avgFilledPrice", "averagePrice", "price"])
-                side = str(order.get("side") or order.get("action") or "").upper()
-                trade_date = _date_from_order(order, end)
-                if not symbol or not qty or not price or side not in {"BUY", "SELL"}:
-                    continue
-                trades.append({
-                    "date": trade_date,
-                    "_sortTime": _sort_time_from_order(order, trade_date),
-                    "action": side,
-                    "symbol": symbol,
-                    "quantity": qty,
-                    "price": round(price, 2),
-                    "amount": round(qty * price, 2),
-                    "realizedPnl": None,
-                    "realizedPnlPct": None,
-                    "note": "模型交易",
-                })
+        for order in _fetch_order_history_pages(trade_client, account_id, start, end):
+            status = str(order.get("status") or order.get("order_status") or "").upper()
+            if status and "FILLED" not in status and "EXECUTED" not in status:
+                continue
+            symbol = _pick_symbol(order)
+            qty = _pick_float(order, ["filled_quantity", "filledQuantity", "total_quantity", "totalQuantity", "quantity", "qty"])
+            price = _pick_float(order, ["filled_price", "filledPrice", "avg_fill_price", "avgFilledPrice", "averagePrice", "price"])
+            side = str(order.get("side") or order.get("action") or "").upper()
+            trade_date = _date_from_order(order, end)
+            if not symbol or not qty or not price or side not in {"BUY", "SELL"}:
+                continue
+            trades.append({
+                "date": trade_date,
+                "_sortTime": _sort_time_from_order(order, trade_date),
+                "action": side,
+                "symbol": symbol,
+                "quantity": qty,
+                "price": round(price, 2),
+                "amount": round(qty * price, 2),
+                "realizedPnl": None,
+                "realizedPnlPct": None,
+                "note": "模型交易",
+            })
     except Exception as exc:
         print(f"Warning: failed to export order history: {exc}")
 
     trades = _attach_realized_pnl(trades)
+    trades = sorted(trades, key=lambda item: item.get("_sortTime", item["date"]), reverse=True)
+    for trade in trades:
+        trade.pop("_sortTime", None)
 
     latest_buy_dates = {}
     for trade in sorted(trades, key=lambda item: item["date"]):
@@ -449,7 +512,7 @@ def _fetch_webull(config_path: Path, order_days: int) -> tuple[float | None, lis
             except ValueError:
                 item["holdingDays"] = 0
 
-    return net_value, positions, sorted(trades, key=lambda item: item["date"], reverse=True)
+    return net_value, positions, trades
 
 
 def _fetch_benchmark_prices(site_data_dir: Path, first_date: str | None) -> dict[str, Any]:

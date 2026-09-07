@@ -1,8 +1,9 @@
 """
 pm2 wrapper — 自适应 DST + 假日检查 + 单实例锁
-ecosystem 设 Mon 13:30 UTC (21:30 北京)
+ecosystem 设 Mon-Fri 13:30 UTC
 - 如果还没到 09:30 ET → sleep
 - 如果是假日 → 跳过 + TG 通知
+- 如果本周策略已执行 → 跳过
 - 单实例锁防止 pm2 cron 重复触发导致重复下单
 """
 
@@ -45,15 +46,25 @@ def main():
 
     today = date.today()
 
-    # Only run on Monday
-    if today.weekday() != 0:
-        print(f"  ⏭️ Today is not Monday ({today}), skipping")
+    # Skip weekends
+    if today.weekday() >= 5:
+        print(f"  ⏭️ Weekend ({today}), skipping")
         return
 
     # Holiday check
     if is_us_market_holiday(today):
         print(f"  ⏭️ US market holiday today ({today}), skipping")
         return
+
+    # Skip if this week's strategy already executed
+    from src.strategy import load_strategy, load_trade_log
+    strategy = load_strategy()
+    if strategy:
+        exec_date = strategy.get("execution_date", "")
+        trade_log = load_trade_log()
+        if any(t.get("date") == exec_date for t in trade_log):
+            print(f"  ⏭️ Strategy {exec_date} already executed, skipping")
+            return
 
     # Wait until open (09:30 ET)
     if not sleep_until_et(9, 30, max_wait=3600):

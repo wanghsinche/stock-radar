@@ -1,10 +1,10 @@
 """
-周一 开盘执行:
+工作日开盘执行:
 1. 检查 US 假日
 2. 加载策略 JSON
-3. 初始化 Webull SDK (paper 模式跳过)
-4. 获取当前持仓
-5. 对比策略 → 确定实际操作
+3. 本地 trade_log 检查是否已执行
+4. 初始化 Webull SDK → API 查单验证 (source of truth)
+5. 获取当前持仓 → 对比策略 → 确定实际操作
 6. 先卖后买 (paper 模式只打印)
 7. 保存持仓 + TG 推送
 """
@@ -132,6 +132,21 @@ def place_order(trade_client, account_id: str, symbol: str, side: str, quantity:
         return False, {"error": error_msg, "detail": traceback.format_exc()}
 
 
+def has_orders_on_date(trade_client, account_id: str, target_date: str) -> bool:
+    """Check Webull API for any orders placed on target_date (YYYY-MM-DD)."""
+    try:
+        res = trade_client.order_v3.get_order_history(
+            account_id, 10, target_date, target_date)
+        if res.status_code != 200:
+            return False
+        data = res.json()
+        orders = data if isinstance(data, list) else (
+            data.get("data") or data.get("orders") or data.get("items") or [])
+        return len(orders) > 0
+    except Exception:
+        return False
+
+
 def _price_from_strategy(strategy: dict, symbol: str) -> float:
     for q in strategy.get("qualified", []):
         if q["symbol"] == symbol:
@@ -182,29 +197,42 @@ def main():
             print(f"  {msg}")
             _tg_push(msg)
             return
-    # 无论策略从哪个文件加载，都必须校验执行日匹配
-    if strategy.get("execution_date") != date_str:
-        msg = (f"⚠️ <b>策略日期不匹配</b>: 策略执行日 {strategy.get('execution_date')}, "
-               f"今天 {date_str}，跳过")
+
+    exec_date = strategy.get("execution_date", "")
+    if exec_date > date_str:
+        msg = f"⚠️ <b>策略执行日在未来</b> {exec_date}, 今天 {date_str}, 跳过"
         print(f"  {msg}")
         _tg_push(msg)
+        return
+
+    # 3. Check if already executed (trade log)
+    trade_log = load_trade_log()
+    if any(t.get("date") == exec_date for t in trade_log):
+        msg = f"⏭️ 策略 {exec_date} 已在本地记录执行, 跳过"
+        print(f"  {msg}")
         return
 
     print(f"  ✓ 加载策略: mode={strategy['mode']}, buy={len(strategy['buy_list'])}, "
           f"sell={len(strategy['sell_list'])}, hold={len(strategy['hold_list'])}")
     print(f"  📋 {strategy['reason']}")
 
-    # 3. Get current positions
+    # 4. Get current positions + verify via Webull API
     webull_positions = {}
     if not paper:
         trade_client, account_id = init_webull(config)
+        # Prod mode: also verify via Webull API (source of truth)
+        if has_orders_on_date(trade_client, account_id, exec_date):
+            msg = f"⏭️ Webull 已有 {exec_date} 的订单, 跳过"
+            print(f"  {msg}")
+            _tg_push(msg)
+            return
         webull_positions = get_positions(trade_client, account_id)
         print(f"  ✓ Webull 持仓: {len(webull_positions)} 只")
     else:
         trade_client = account_id = None
         print(f"  📋 Paper 模式: 跳过查询持仓")
 
-    # 4. Determine actual actions
+    # 5. Determine actual actions
     webull_held = set(webull_positions.keys())
     strategy_sell = set(strategy["sell_list"])
     strategy_hold = set(strategy["hold_list"])

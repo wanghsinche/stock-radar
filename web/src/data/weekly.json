@@ -1,5 +1,51 @@
 [
   {
+    "slug": "2026-09-14",
+    "date": "2026-09-14",
+    "title": "2026-09-14：交易执行记录",
+    "phase": "已执行",
+    "publishedAt": "2026-09-12",
+    "executedAt": "2026-09-14",
+    "netValue": 20604.92,
+    "weeklyReturnPct": null,
+    "cumulativeReturnPct": -9.64,
+    "spyReturnPct": 2.22,
+    "qqqReturnPct": 0.77,
+    "buys": [
+      "HPE"
+    ],
+    "sells": [
+      "CRWD"
+    ],
+    "holds": [],
+    "proofUrl": ""
+  },
+  {
+    "slug": "2026-09-08",
+    "date": "2026-09-08",
+    "title": "2026-09-08：交易执行记录",
+    "phase": "已执行",
+    "publishedAt": "2026-09-05",
+    "executedAt": "2026-09-08",
+    "netValue": null,
+    "weeklyReturnPct": null,
+    "cumulativeReturnPct": null,
+    "spyReturnPct": null,
+    "qqqReturnPct": null,
+    "buys": [
+      "CRWD",
+      "DELL",
+      "MU"
+    ],
+    "sells": [
+      "ABNB",
+      "CRL",
+      "IBKR"
+    ],
+    "holds": [],
+    "proofUrl": ""
+  },
+  {
     "slug": "2026-08-31",
     "date": "2026-08-31",
     "title": "2026-08-31：交易执行记录",
@@ -15,14 +61,16 @@
       "ABNB",
       "HUM",
       "IBKR",
-      "IQV"
+      "IQV",
+      "STT"
     ],
     "sells": [
       "FLEX",
       "MRNA",
       "MRVL",
       "MU",
-      "SNDK"
+      "SNDK",
+      "STX"
     ],
     "holds": [],
     "proofUrl": ""
@@ -43,6 +91,7 @@
       "CRL",
       "FLEX",
       "MRNA",
+      "MU",
       "PSX",
       "VLO"
     ],
@@ -98,7 +147,9 @@
     "qqqReturnPct": 1.92,
     "buys": [
       "CRWD",
-      "DELL"
+      "DELL",
+      "HPE",
+      "PANW"
     ],
     "sells": [
       "APA",
@@ -133,11 +184,14 @@
       "XYZ"
     ],
     "sells": [
+      "CASY",
       "CSX",
       "CVS",
+      "MPC",
       "PSX",
       "TRGP",
       "UNH",
+      "URI",
       "VLO"
     ],
     "holds": [],
@@ -200,6 +254,7 @@
       "VLO"
     ],
     "sells": [
+      "ADBE",
       "ANET",
       "AXON",
       "CRL",
@@ -228,6 +283,7 @@
       "ANET",
       "AXON",
       "EXPE",
+      "PANW",
       "ZBRA"
     ],
     "sells": [
@@ -258,11 +314,14 @@
       "DASH",
       "ERIE",
       "GPC",
+      "HOOD",
       "MRNA",
       "TECH",
       "UAL"
     ],
-    "sells": [],
+    "sells": [
+      "IAU"
+    ],
     "holds": [],
     "proofUrl": ""
   },

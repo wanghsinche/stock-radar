@@ -3,90 +3,90 @@
     "symbol": "PSX",
     "name": "PSX",
     "quantity": 8.0,
-    "marketValue": 2044.24,
-    "weightPct": 10.81,
-    "unrealizedPnl": 109.27,
-    "unrealizedPnlPct": 5.65,
-    "holdingDays": 21
+    "marketValue": 2100.08,
+    "weightPct": 11.01,
+    "unrealizedPnl": 165.11,
+    "unrealizedPnlPct": 8.53,
+    "holdingDays": 22
   },
   {
     "symbol": "DELL",
     "name": "DELL",
     "quantity": 4.0,
-    "marketValue": 2170.84,
-    "weightPct": 11.48,
-    "unrealizedPnl": 74.84,
-    "unrealizedPnlPct": 3.57,
-    "holdingDays": 6
+    "marketValue": 2244.12,
+    "weightPct": 11.76,
+    "unrealizedPnl": 148.12,
+    "unrealizedPnlPct": 7.07,
+    "holdingDays": 7
   },
   {
     "symbol": "HPE",
     "name": "HPE",
     "quantity": 34.0,
-    "marketValue": 1934.26,
-    "weightPct": 10.23,
-    "unrealizedPnl": 26.32,
-    "unrealizedPnlPct": 1.38,
-    "holdingDays": 0
+    "marketValue": 1928.48,
+    "weightPct": 10.11,
+    "unrealizedPnl": 20.54,
+    "unrealizedPnlPct": 1.08,
+    "holdingDays": 1
   },
   {
     "symbol": "MPC",
     "name": "MPC",
     "quantity": 6.0,
-    "marketValue": 2354.04,
-    "weightPct": 12.45,
-    "unrealizedPnl": 202.62,
-    "unrealizedPnlPct": 9.42,
-    "holdingDays": 28
+    "marketValue": 2423.82,
+    "weightPct": 12.7,
+    "unrealizedPnl": 272.4,
+    "unrealizedPnlPct": 12.66,
+    "holdingDays": 29
   },
   {
     "symbol": "MU",
     "name": "MU",
     "quantity": 2.0,
-    "marketValue": 1852.9,
-    "weightPct": 9.8,
-    "unrealizedPnl": -204.97,
-    "unrealizedPnlPct": -9.96,
-    "holdingDays": 6
+    "marketValue": 1872.7,
+    "weightPct": 9.81,
+    "unrealizedPnl": -185.17,
+    "unrealizedPnlPct": -9.0,
+    "holdingDays": 7
   },
   {
     "symbol": "VLO",
     "name": "VLO",
     "quantity": 6.0,
-    "marketValue": 2283.72,
-    "weightPct": 12.08,
-    "unrealizedPnl": 207.36,
-    "unrealizedPnlPct": 9.99,
-    "holdingDays": 21
+    "marketValue": 2346.0,
+    "weightPct": 12.29,
+    "unrealizedPnl": 269.64,
+    "unrealizedPnlPct": 12.99,
+    "holdingDays": 22
   },
   {
     "symbol": "IQV",
     "name": "IQV",
     "quantity": 8.0,
-    "marketValue": 2133.04,
-    "weightPct": 11.28,
-    "unrealizedPnl": 67.44,
-    "unrealizedPnlPct": 3.26,
-    "holdingDays": 14
+    "marketValue": 2138.16,
+    "weightPct": 11.21,
+    "unrealizedPnl": 72.56,
+    "unrealizedPnlPct": 3.51,
+    "holdingDays": 15
   },
   {
     "symbol": "STT",
     "name": "STT",
     "quantity": 11.0,
-    "marketValue": 2059.75,
-    "weightPct": 10.9,
-    "unrealizedPnl": -71.04,
-    "unrealizedPnlPct": -3.33,
-    "holdingDays": 14
+    "marketValue": 2026.64,
+    "weightPct": 10.62,
+    "unrealizedPnl": -104.15,
+    "unrealizedPnlPct": -4.89,
+    "holdingDays": 15
   },
   {
     "symbol": "HUM",
     "name": "HUM",
     "quantity": 5.0,
-    "marketValue": 2071.2,
-    "weightPct": 10.96,
-    "unrealizedPnl": 140.35,
-    "unrealizedPnlPct": 7.27,
-    "holdingDays": 14
+    "marketValue": 2001.85,
+    "weightPct": 10.49,
+    "unrealizedPnl": 71.0,
+    "unrealizedPnlPct": 3.68,
+    "holdingDays": 15
   }
 ]

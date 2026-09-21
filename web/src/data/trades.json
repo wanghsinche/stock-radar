@@ -1,5 +1,71 @@
 [
   {
+    "date": "2026-09-21",
+    "action": "BUY",
+    "symbol": "INTC",
+    "quantity": 19.0,
+    "price": 118.75,
+    "amount": 2256.25,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-09-21",
+    "action": "BUY",
+    "symbol": "AMD",
+    "quantity": 3.0,
+    "price": 587.6,
+    "amount": 1762.8,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-09-21",
+    "action": "BUY",
+    "symbol": "SNDK",
+    "quantity": 1.0,
+    "price": 1804.86,
+    "amount": 1804.86,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-09-21",
+    "action": "SELL",
+    "symbol": "STT",
+    "quantity": 11.0,
+    "price": 184.59,
+    "amount": 2030.52,
+    "realizedPnl": -100.32,
+    "realizedPnlPct": -4.71,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-09-21",
+    "action": "SELL",
+    "symbol": "MU",
+    "quantity": 2.0,
+    "price": 1047.02,
+    "amount": 2094.04,
+    "realizedPnl": 36.16,
+    "realizedPnlPct": 1.76,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-09-21",
+    "action": "SELL",
+    "symbol": "IQV",
+    "quantity": 8.0,
+    "price": 269.06,
+    "amount": 2152.52,
+    "realizedPnl": 86.88,
+    "realizedPnlPct": 4.21,
+    "note": "模型交易"
+  },
+  {
     "date": "2026-09-14",
     "action": "BUY",
     "symbol": "HPE",

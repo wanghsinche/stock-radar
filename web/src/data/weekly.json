@@ -1,5 +1,30 @@
 [
   {
+    "slug": "2026-09-21",
+    "date": "2026-09-21",
+    "title": "2026-09-21：交易执行记录",
+    "phase": "已执行",
+    "publishedAt": "2026-09-19",
+    "executedAt": "2026-09-21",
+    "netValue": 21412.53,
+    "weeklyReturnPct": 0.03,
+    "cumulativeReturnPct": -6.1,
+    "spyReturnPct": 2.12,
+    "qqqReturnPct": 1.69,
+    "buys": [
+      "AMD",
+      "INTC",
+      "SNDK"
+    ],
+    "sells": [
+      "IQV",
+      "MU",
+      "STT"
+    ],
+    "holds": [],
+    "proofUrl": ""
+  },
+  {
     "slug": "2026-09-14",
     "date": "2026-09-14",
     "title": "2026-09-14：交易执行记录",

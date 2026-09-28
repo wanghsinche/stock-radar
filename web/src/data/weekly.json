@@ -1,5 +1,33 @@
 [
   {
+    "slug": "2026-09-28",
+    "date": "2026-09-28",
+    "title": "2026-09-28：交易执行记录",
+    "phase": "已执行",
+    "publishedAt": "2026-09-26",
+    "executedAt": "2026-09-28",
+    "netValue": 20912.11,
+    "weeklyReturnPct": -1.03,
+    "cumulativeReturnPct": -8.29,
+    "spyReturnPct": 3.42,
+    "qqqReturnPct": 5.05,
+    "buys": [
+      "CRWD",
+      "MRNA",
+      "MRVL",
+      "MU",
+      "PANW"
+    ],
+    "sells": [
+      "DELL",
+      "HUM",
+      "PSX",
+      "VLO"
+    ],
+    "holds": [],
+    "proofUrl": ""
+  },
+  {
     "slug": "2026-09-21",
     "date": "2026-09-21",
     "title": "2026-09-21：交易执行记录",

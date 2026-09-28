@@ -1,5 +1,104 @@
 [
   {
+    "date": "2026-09-28",
+    "action": "BUY",
+    "symbol": "PANW",
+    "quantity": 5.0,
+    "price": 373.0,
+    "amount": 1865.0,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-09-28",
+    "action": "BUY",
+    "symbol": "MRVL",
+    "quantity": 8.0,
+    "price": 261.57,
+    "amount": 2092.6,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-09-28",
+    "action": "BUY",
+    "symbol": "CRWD",
+    "quantity": 8.0,
+    "price": 250.18,
+    "amount": 2001.42,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-09-28",
+    "action": "BUY",
+    "symbol": "MU",
+    "quantity": 1.0,
+    "price": 1079.2,
+    "amount": 1079.2,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-09-28",
+    "action": "BUY",
+    "symbol": "MRNA",
+    "quantity": 10.0,
+    "price": 194.83,
+    "amount": 1948.31,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-09-28",
+    "action": "SELL",
+    "symbol": "VLO",
+    "quantity": 6.0,
+    "price": 385.79,
+    "amount": 2314.71,
+    "realizedPnl": 238.38,
+    "realizedPnlPct": 11.48,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-09-28",
+    "action": "SELL",
+    "symbol": "PSX",
+    "quantity": 8.0,
+    "price": 255.39,
+    "amount": 2043.12,
+    "realizedPnl": 108.16,
+    "realizedPnlPct": 5.59,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-09-28",
+    "action": "SELL",
+    "symbol": "HUM",
+    "quantity": 5.0,
+    "price": 401.81,
+    "amount": 2009.05,
+    "realizedPnl": 78.2,
+    "realizedPnlPct": 4.05,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-09-28",
+    "action": "SELL",
+    "symbol": "DELL",
+    "quantity": 4.0,
+    "price": 552.06,
+    "amount": 2208.24,
+    "realizedPnl": 112.24,
+    "realizedPnlPct": 5.35,
+    "note": "模型交易"
+  },
+  {
     "date": "2026-09-21",
     "action": "BUY",
     "symbol": "INTC",

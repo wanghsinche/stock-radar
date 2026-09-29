@@ -3,100 +3,100 @@
     "symbol": "INTC",
     "name": "INTC",
     "quantity": 19.0,
-    "marketValue": 2228.51,
-    "weightPct": 11.63,
-    "unrealizedPnl": -27.74,
-    "unrealizedPnlPct": -1.23,
-    "holdingDays": 7
+    "marketValue": 2208.56,
+    "weightPct": 11.44,
+    "unrealizedPnl": -47.69,
+    "unrealizedPnlPct": -2.11,
+    "holdingDays": 8
   },
   {
     "symbol": "HPE",
     "name": "HPE",
     "quantity": 34.0,
-    "marketValue": 2110.72,
-    "weightPct": 11.01,
-    "unrealizedPnl": 202.78,
-    "unrealizedPnlPct": 10.63,
-    "holdingDays": 14
+    "marketValue": 2101.54,
+    "weightPct": 10.89,
+    "unrealizedPnl": 193.6,
+    "unrealizedPnlPct": 10.15,
+    "holdingDays": 15
   },
   {
     "symbol": "MPC",
     "name": "MPC",
     "quantity": 6.0,
-    "marketValue": 2376.12,
-    "weightPct": 12.4,
-    "unrealizedPnl": 224.7,
-    "unrealizedPnlPct": 10.44,
-    "holdingDays": 42
+    "marketValue": 2325.42,
+    "weightPct": 12.05,
+    "unrealizedPnl": 174.0,
+    "unrealizedPnlPct": 8.09,
+    "holdingDays": 43
   },
   {
     "symbol": "AMD",
     "name": "AMD",
     "quantity": 3.0,
-    "marketValue": 1826.64,
-    "weightPct": 9.53,
-    "unrealizedPnl": 63.84,
-    "unrealizedPnlPct": 3.62,
-    "holdingDays": 7
+    "marketValue": 1856.61,
+    "weightPct": 9.62,
+    "unrealizedPnl": 93.81,
+    "unrealizedPnlPct": 5.32,
+    "holdingDays": 8
   },
   {
     "symbol": "MU",
     "name": "MU",
     "quantity": 1.0,
-    "marketValue": 1057.4,
-    "weightPct": 5.52,
-    "unrealizedPnl": -21.8,
-    "unrealizedPnlPct": -2.02,
-    "holdingDays": 0
+    "marketValue": 1069.45,
+    "weightPct": 5.54,
+    "unrealizedPnl": -9.75,
+    "unrealizedPnlPct": -0.9,
+    "holdingDays": 1
   },
   {
     "symbol": "SNDK",
     "name": "SNDK",
     "quantity": 1.0,
-    "marketValue": 1711.82,
-    "weightPct": 8.93,
-    "unrealizedPnl": -93.04,
-    "unrealizedPnlPct": -5.15,
-    "holdingDays": 7
+    "marketValue": 1712.0,
+    "weightPct": 8.87,
+    "unrealizedPnl": -92.86,
+    "unrealizedPnlPct": -5.14,
+    "holdingDays": 8
   },
   {
     "symbol": "MRVL",
     "name": "MRVL",
     "quantity": 8.0,
-    "marketValue": 2028.48,
-    "weightPct": 10.58,
-    "unrealizedPnl": -64.12,
-    "unrealizedPnlPct": -3.06,
-    "holdingDays": 0
+    "marketValue": 2096.56,
+    "weightPct": 10.86,
+    "unrealizedPnl": 3.96,
+    "unrealizedPnlPct": 0.19,
+    "holdingDays": 1
   },
   {
     "symbol": "PANW",
     "name": "PANW",
     "quantity": 5.0,
-    "marketValue": 1896.7,
-    "weightPct": 9.9,
-    "unrealizedPnl": 31.7,
-    "unrealizedPnlPct": 1.7,
-    "holdingDays": 0
+    "marketValue": 1896.05,
+    "weightPct": 9.82,
+    "unrealizedPnl": 31.05,
+    "unrealizedPnlPct": 1.66,
+    "holdingDays": 1
   },
   {
     "symbol": "CRWD",
     "name": "CRWD",
     "quantity": 8.0,
-    "marketValue": 2007.84,
-    "weightPct": 10.48,
-    "unrealizedPnl": 6.42,
-    "unrealizedPnlPct": 0.32,
-    "holdingDays": 0
+    "marketValue": 2058.56,
+    "weightPct": 10.67,
+    "unrealizedPnl": 57.14,
+    "unrealizedPnlPct": 2.85,
+    "holdingDays": 1
   },
   {
     "symbol": "MRNA",
     "name": "MRNA",
     "quantity": 10.0,
-    "marketValue": 1920.6,
-    "weightPct": 10.02,
-    "unrealizedPnl": -27.71,
-    "unrealizedPnlPct": -1.42,
-    "holdingDays": 0
+    "marketValue": 1976.1,
+    "weightPct": 10.24,
+    "unrealizedPnl": 27.79,
+    "unrealizedPnlPct": 1.43,
+    "holdingDays": 1
   }
 ]

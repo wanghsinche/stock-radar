@@ -1,5 +1,32 @@
 [
   {
+    "slug": "2026-10-05",
+    "date": "2026-10-05",
+    "title": "2026-10-05：交易执行记录",
+    "phase": "已执行",
+    "publishedAt": "2026-10-03",
+    "executedAt": "2026-10-05",
+    "netValue": 21770.14,
+    "weeklyReturnPct": -0.89,
+    "cumulativeReturnPct": -4.53,
+    "spyReturnPct": 3.19,
+    "qqqReturnPct": 5.77,
+    "buys": [
+      "DDOG",
+      "FTNT",
+      "NTAP",
+      "P"
+    ],
+    "sells": [
+      "INTC",
+      "MPC",
+      "MU",
+      "SNDK"
+    ],
+    "holds": [],
+    "proofUrl": ""
+  },
+  {
     "slug": "2026-09-28",
     "date": "2026-09-28",
     "title": "2026-09-28：交易执行记录",

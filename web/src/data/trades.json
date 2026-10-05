@@ -1,5 +1,93 @@
 [
   {
+    "date": "2026-10-05",
+    "action": "BUY",
+    "symbol": "P",
+    "quantity": 15.0,
+    "price": 141.75,
+    "amount": 2126.25,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-10-05",
+    "action": "BUY",
+    "symbol": "FTNT",
+    "quantity": 11.0,
+    "price": 180.17,
+    "amount": 1981.87,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-10-05",
+    "action": "BUY",
+    "symbol": "NTAP",
+    "quantity": 9.0,
+    "price": 228.49,
+    "amount": 2056.41,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-10-05",
+    "action": "BUY",
+    "symbol": "DDOG",
+    "quantity": 7.0,
+    "price": 277.43,
+    "amount": 1941.98,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-10-05",
+    "action": "SELL",
+    "symbol": "SNDK",
+    "quantity": 1.0,
+    "price": 1722.88,
+    "amount": 1722.88,
+    "realizedPnl": -81.98,
+    "realizedPnlPct": -4.54,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-10-05",
+    "action": "SELL",
+    "symbol": "MU",
+    "quantity": 1.0,
+    "price": 1068.76,
+    "amount": 1068.76,
+    "realizedPnl": -10.44,
+    "realizedPnlPct": -0.97,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-10-05",
+    "action": "SELL",
+    "symbol": "MPC",
+    "quantity": 6.0,
+    "price": 421.07,
+    "amount": 2526.45,
+    "realizedPnl": 375.0,
+    "realizedPnlPct": 17.43,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-10-05",
+    "action": "SELL",
+    "symbol": "INTC",
+    "quantity": 19.0,
+    "price": 115.67,
+    "amount": 2197.73,
+    "realizedPnl": -58.52,
+    "realizedPnlPct": -2.59,
+    "note": "模型交易"
+  },
+  {
     "date": "2026-09-28",
     "action": "BUY",
     "symbol": "PANW",

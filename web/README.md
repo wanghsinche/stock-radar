@@ -19,7 +19,7 @@ npm run dev
 
 ## 数据更新
 
-每周六/周一更新这些文件后提交 Git，Cloudflare Pages 会自动重新构建：
+每周日/周一更新这些文件后提交 Git，Cloudflare Pages 会自动重新构建：
 
 - `src/data/latest.json`
 - `src/data/holdings.json`
@@ -31,7 +31,7 @@ npm run dev
 
 ## 推荐导出流程
 
-周六公布策略，只读取本地策略 JSON，不调用 Webull：
+周日公布策略，只读取本地策略 JSON，不调用 Webull：
 
 ```bash
 uv run python -m src.site_export strategy

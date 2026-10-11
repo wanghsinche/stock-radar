@@ -1,7 +1,7 @@
 """Export public static-site data for the machine account pages.
 
 Two intended runs:
-- Saturday: read the generated strategy JSON and publish the coming actions.
+- Sunday Beijing time: read the generated strategy JSON and publish the coming actions.
 - Monday: fetch Webull account/positions/orders and publish execution results.
 
 The website remains fully static. This script is the only place that touches local
@@ -612,7 +612,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Export static website data.")
     sub = parser.add_subparsers(dest="mode", required=True)
 
-    strategy_cmd = sub.add_parser("strategy", help="Export Saturday strategy publication data")
+    strategy_cmd = sub.add_parser("strategy", help="Export Sunday strategy publication data")
     strategy_cmd.add_argument("--strategy-file", type=Path, default=None)
     strategy_cmd.add_argument("--site-data-dir", type=Path, default=SITE_DATA_DIR)
     strategy_cmd.add_argument("--initial-capital", type=float, default=None,

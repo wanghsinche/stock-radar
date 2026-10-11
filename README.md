@@ -109,7 +109,7 @@ uv run python -c "from src.scanner import scan_and_save; scan_and_save()"
 
 ### 定时任务（pm2）
 
-每周六 06:00（北京时间）自动运行：
+每周日 11:00（北京时间）自动生成雷达和策略，11:15 发布策略页：
 
 ```bash
 pm2 start ecosystem.config.js

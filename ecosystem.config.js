@@ -8,7 +8,7 @@ module.exports = {
       interpreter: 'none',
       instances: 1,
       autorestart: false,
-      cron_restart: '0 6 * * 6',
+      cron_restart: '0 3 * * 0',   // Sun 03:00 UTC = Sun 11:00 Beijing
       watch: false,
       max_memory_restart: '512M',
       log_file: '/root/work/plusefin-landing-page/stock-radar/logs/radar.log',
@@ -42,7 +42,7 @@ module.exports = {
       interpreter: 'none',
       instances: 1,
       autorestart: false,
-      cron_restart: '0 6 * * 6',   // Sat 06:00 UTC = Sat 14:00 Beijing (与雷达同步)
+      cron_restart: '0 3 * * 0',   // Sun 03:00 UTC = Sun 11:00 Beijing (与雷达同步)
       watch: false,
       max_memory_restart: '512M',
       log_file: '/root/work/plusefin-landing-page/stock-radar/logs/strategy.log',
@@ -59,7 +59,7 @@ module.exports = {
       interpreter: 'none',
       instances: 1,
       autorestart: false,
-      cron_restart: '15 6 * * 6',   // Sat 06:15 UTC, after gen-strategy
+      cron_restart: '15 3 * * 0',   // Sun 03:15 UTC = Sun 11:15 Beijing, after gen-strategy
       watch: false,
       max_memory_restart: '512M',
       log_file: '/root/work/plusefin-landing-page/stock-radar/logs/site-strategy.log',

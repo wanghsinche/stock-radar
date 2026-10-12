@@ -6,17 +6,19 @@
     "phase": "已执行",
     "publishedAt": "2026-10-03",
     "executedAt": "2026-10-05",
-    "netValue": 22036.79,
-    "weeklyReturnPct": 0.32,
-    "cumulativeReturnPct": -3.36,
-    "spyReturnPct": 3.76,
-    "qqqReturnPct": 5.49,
+    "netValue": 22626.49,
+    "weeklyReturnPct": 3.01,
+    "cumulativeReturnPct": -0.78,
+    "spyReturnPct": 4.39,
+    "qqqReturnPct": 6.01,
     "buys": [
       "DDOG",
       "FTNT",
+      "NTAP",
       "P"
     ],
     "sells": [
+      "INTC",
       "MPC",
       "MU",
       "SNDK"
@@ -39,12 +41,15 @@
     "buys": [
       "CRWD",
       "MRNA",
-      "MU"
+      "MRVL",
+      "MU",
+      "PANW"
     ],
     "sells": [
       "DELL",
       "HUM",
-      "PSX"
+      "PSX",
+      "VLO"
     ],
     "holds": [],
     "proofUrl": ""
@@ -62,6 +67,8 @@
     "spyReturnPct": 2.86,
     "qqqReturnPct": 4.57,
     "buys": [
+      "AMD",
+      "INTC",
       "SNDK"
     ],
     "sells": [
@@ -84,7 +91,9 @@
     "cumulativeReturnPct": -6.13,
     "spyReturnPct": 1.99,
     "qqqReturnPct": 1.06,
-    "buys": [],
+    "buys": [
+      "HPE"
+    ],
     "sells": [
       "CRWD"
     ],
@@ -104,10 +113,13 @@
     "spyReturnPct": null,
     "qqqReturnPct": null,
     "buys": [
-      "CRWD"
+      "CRWD",
+      "DELL",
+      "MU"
     ],
     "sells": [
       "ABNB",
+      "CRL",
       "IBKR"
     ],
     "holds": [],
@@ -129,12 +141,16 @@
       "ABNB",
       "HUM",
       "IBKR",
-      "IQV"
+      "IQV",
+      "STT"
     ],
     "sells": [
       "FLEX",
+      "MRNA",
       "MRVL",
-      "SNDK"
+      "MU",
+      "SNDK",
+      "STX"
     ],
     "holds": [],
     "proofUrl": ""
@@ -155,10 +171,15 @@
       "CRL",
       "FLEX",
       "MRNA",
-      "PSX"
+      "MU",
+      "PSX",
+      "VLO"
     ],
     "sells": [
       "CRWD",
+      "DELL",
+      "HPE",
+      "HPQ",
       "NTAP",
       "PANW"
     ],
@@ -186,7 +207,8 @@
     "sells": [
       "GRMN",
       "NUE",
-      "PYPL"
+      "PYPL",
+      "XYZ"
     ],
     "holds": [],
     "proofUrl": ""
@@ -205,7 +227,9 @@
     "qqqReturnPct": 1.92,
     "buys": [
       "CRWD",
-      "DELL"
+      "DELL",
+      "HPE",
+      "PANW"
     ],
     "sells": [
       "APA",
@@ -232,13 +256,22 @@
       "APA",
       "DOC",
       "GRMN",
+      "HPQ",
+      "HST",
+      "NTAP",
+      "NUE",
+      "PYPL",
       "XYZ"
     ],
     "sells": [
+      "CASY",
       "CSX",
       "CVS",
+      "MPC",
       "PSX",
       "TRGP",
+      "UNH",
+      "URI",
       "VLO"
     ],
     "holds": [],
@@ -262,6 +295,7 @@
       "CVS",
       "DVA",
       "TRGP",
+      "UNH",
       "URI"
     ],
     "sells": [
@@ -269,8 +303,10 @@
       "AJG",
       "GDDY",
       "JKHY",
+      "PANW",
       "PYPL",
-      "TECH"
+      "TECH",
+      "VEEV"
     ],
     "holds": [],
     "proofUrl": ""
@@ -298,12 +334,15 @@
       "VLO"
     ],
     "sells": [
+      "ADBE",
       "ANET",
+      "AXON",
       "CRL",
       "DASH",
       "EXPE",
       "HOOD",
-      "MRNA"
+      "MRNA",
+      "ZBRA"
     ],
     "holds": [],
     "proofUrl": ""
@@ -324,11 +363,13 @@
       "ANET",
       "AXON",
       "EXPE",
+      "PANW",
       "ZBRA"
     ],
     "sells": [
       "BRO",
       "ERIE",
+      "GPC",
       "UAL"
     ],
     "holds": [],
@@ -348,15 +389,19 @@
     "qqqReturnPct": null,
     "buys": [
       "AJG",
+      "BRO",
       "CRL",
       "DASH",
       "ERIE",
       "GPC",
+      "HOOD",
       "MRNA",
       "TECH",
       "UAL"
     ],
-    "sells": [],
+    "sells": [
+      "IAU"
+    ],
     "holds": [],
     "proofUrl": ""
   },

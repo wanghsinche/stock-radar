@@ -1,5 +1,39 @@
 [
   {
+    "slug": "2026-10-19",
+    "date": "2026-10-19",
+    "title": "2026-10-19：交易执行记录",
+    "phase": "已执行",
+    "publishedAt": "2026-10-17",
+    "executedAt": "2026-10-19",
+    "netValue": 20394.57,
+    "weeklyReturnPct": 1.55,
+    "cumulativeReturnPct": -10.56,
+    "spyReturnPct": 2.33,
+    "qqqReturnPct": 0.16,
+    "buys": [
+      "HUM",
+      "MPC",
+      "PSX",
+      "VEEV",
+      "VLO",
+      "WDAY",
+      "ZBRA"
+    ],
+    "sells": [
+      "AMD",
+      "CRWD",
+      "DDOG",
+      "FTNT",
+      "HPE",
+      "MRVL",
+      "NVDA",
+      "PANW"
+    ],
+    "holds": [],
+    "proofUrl": ""
+  },
+  {
     "slug": "2026-10-05",
     "date": "2026-10-05",
     "title": "2026-10-05：交易执行记录",

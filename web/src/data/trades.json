@@ -1,5 +1,126 @@
 [
   {
+    "date": "2026-10-26",
+    "action": "BUY",
+    "symbol": "NOW",
+    "quantity": 13.0,
+    "price": 156.96,
+    "amount": 2040.48,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-10-26",
+    "action": "BUY",
+    "symbol": "IQV",
+    "quantity": 7.0,
+    "price": 281.28,
+    "amount": 1968.96,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-10-26",
+    "action": "BUY",
+    "symbol": "BBY",
+    "quantity": 21.0,
+    "price": 99.78,
+    "amount": 2095.39,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-10-26",
+    "action": "BUY",
+    "symbol": "RVTY",
+    "quantity": 13.0,
+    "price": 160.93,
+    "amount": 2092.09,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-10-26",
+    "action": "BUY",
+    "symbol": "CRL",
+    "quantity": 6.0,
+    "price": 349.28,
+    "amount": 2095.7,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-10-26",
+    "action": "SELL",
+    "symbol": "VLO",
+    "quantity": 4.0,
+    "price": 420.76,
+    "amount": 1683.05,
+    "realizedPnl": -123.76,
+    "realizedPnlPct": -6.85,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-10-26",
+    "action": "SELL",
+    "symbol": "PSX",
+    "quantity": 7.0,
+    "price": 284.81,
+    "amount": 1993.7,
+    "realizedPnl": -89.88,
+    "realizedPnlPct": -4.31,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-10-26",
+    "action": "SELL",
+    "symbol": "P",
+    "quantity": 15.0,
+    "price": 125.04,
+    "amount": 1875.6,
+    "realizedPnl": -250.65,
+    "realizedPnlPct": -11.79,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-10-26",
+    "action": "SELL",
+    "symbol": "NTAP",
+    "quantity": 9.0,
+    "price": 217.24,
+    "amount": 1955.12,
+    "realizedPnl": -101.25,
+    "realizedPnlPct": -4.92,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-10-26",
+    "action": "SELL",
+    "symbol": "MPC",
+    "quantity": 4.0,
+    "price": 459.56,
+    "amount": 1838.26,
+    "realizedPnl": -109.32,
+    "realizedPnlPct": -5.61,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-10-26",
+    "action": "SELL",
+    "symbol": "HUM",
+    "quantity": 5.0,
+    "price": 420.92,
+    "amount": 2104.58,
+    "realizedPnl": 28.5,
+    "realizedPnlPct": 1.37,
+    "note": "模型交易"
+  },
+  {
     "date": "2026-10-19",
     "action": "BUY",
     "symbol": "WDAY",

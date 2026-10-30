@@ -6,11 +6,11 @@
     "phase": "已执行",
     "publishedAt": "2026-10-24",
     "executedAt": "2026-10-26",
-    "netValue": 19762.33,
-    "weeklyReturnPct": -1.27,
-    "cumulativeReturnPct": -13.34,
-    "spyReturnPct": 3.55,
-    "qqqReturnPct": 2.39,
+    "netValue": 19359.97,
+    "weeklyReturnPct": -3.28,
+    "cumulativeReturnPct": -15.1,
+    "spyReturnPct": 3.15,
+    "qqqReturnPct": 0.94,
     "buys": [
       "BBY",
       "CRL",
@@ -466,25 +466,6 @@
     "sells": [
       "IAU"
     ],
-    "holds": [],
-    "proofUrl": ""
-  },
-  {
-    "slug": "2026-07-01",
-    "date": "2026-07-01",
-    "title": "2026-07-01：交易执行记录",
-    "phase": "已执行",
-    "publishedAt": "2026-06-27",
-    "executedAt": "2026-07-01",
-    "netValue": null,
-    "weeklyReturnPct": null,
-    "cumulativeReturnPct": null,
-    "spyReturnPct": null,
-    "qqqReturnPct": null,
-    "buys": [
-      "IAU"
-    ],
-    "sells": [],
     "holds": [],
     "proofUrl": ""
   }

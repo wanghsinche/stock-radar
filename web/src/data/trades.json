@@ -1722,8 +1722,8 @@
     "quantity": 3.0,
     "price": 78.03,
     "amount": 234.1,
-    "realizedPnl": 4.47,
-    "realizedPnlPct": 1.95,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
     "note": "模型交易"
   },
   {
@@ -1832,17 +1832,6 @@
     "quantity": 25.0,
     "price": 78.13,
     "amount": 1953.25,
-    "realizedPnl": null,
-    "realizedPnlPct": null,
-    "note": "模型交易"
-  },
-  {
-    "date": "2026-07-01",
-    "action": "BUY",
-    "symbol": "IAU",
-    "quantity": 3.0,
-    "price": 76.54,
-    "amount": 229.62,
     "realizedPnl": null,
     "realizedPnlPct": null,
     "note": "模型交易"

@@ -3,9 +3,9 @@
     "symbol": "NVDA",
     "name": "NVDA",
     "quantity": 0.0917,
-    "marketValue": 19.53,
+    "marketValue": 18.96,
     "weightPct": 0.11,
-    "unrealizedPnl": 19.53,
+    "unrealizedPnl": 18.95,
     "unrealizedPnlPct": 0,
     "holdingDays": 0
   },
@@ -13,90 +13,90 @@
     "symbol": "VEEV",
     "name": "VEEV",
     "quantity": 6.0,
-    "marketValue": 1882.56,
-    "weightPct": 10.37,
-    "unrealizedPnl": -12.54,
-    "unrealizedPnlPct": -0.66,
-    "holdingDays": 10
+    "marketValue": 1878.9,
+    "weightPct": 10.59,
+    "unrealizedPnl": -16.2,
+    "unrealizedPnlPct": -0.85,
+    "holdingDays": 11
   },
   {
     "symbol": "WDAY",
     "name": "WDAY",
     "quantity": 11.0,
-    "marketValue": 2148.63,
-    "weightPct": 11.84,
-    "unrealizedPnl": 40.04,
-    "unrealizedPnlPct": 1.9,
-    "holdingDays": 10
+    "marketValue": 2195.82,
+    "weightPct": 12.37,
+    "unrealizedPnl": 87.23,
+    "unrealizedPnlPct": 4.14,
+    "holdingDays": 11
   },
   {
     "symbol": "ZBRA",
     "name": "ZBRA",
     "quantity": 5.0,
-    "marketValue": 1939.55,
-    "weightPct": 10.68,
-    "unrealizedPnl": 77.3,
-    "unrealizedPnlPct": 4.15,
-    "holdingDays": 10
+    "marketValue": 1802.25,
+    "weightPct": 10.16,
+    "unrealizedPnl": -60.0,
+    "unrealizedPnlPct": -3.22,
+    "holdingDays": 11
   },
   {
     "symbol": "IQV",
     "name": "IQV",
     "quantity": 7.0,
-    "marketValue": 1942.85,
-    "weightPct": 10.7,
-    "unrealizedPnl": -26.11,
-    "unrealizedPnlPct": -1.33,
-    "holdingDays": 3
+    "marketValue": 1904.35,
+    "weightPct": 10.73,
+    "unrealizedPnl": -64.61,
+    "unrealizedPnlPct": -3.28,
+    "holdingDays": 4
   },
   {
     "symbol": "RVTY",
     "name": "RVTY",
     "quantity": 13.0,
-    "marketValue": 2152.93,
-    "weightPct": 11.86,
-    "unrealizedPnl": 60.84,
-    "unrealizedPnlPct": 2.91,
-    "holdingDays": 3
+    "marketValue": 2082.6,
+    "weightPct": 11.74,
+    "unrealizedPnl": -9.49,
+    "unrealizedPnlPct": -0.45,
+    "holdingDays": 4
   },
   {
     "symbol": "MRNA",
     "name": "MRNA",
     "quantity": 10.0,
-    "marketValue": 2232.9,
-    "weightPct": 12.3,
-    "unrealizedPnl": 284.59,
-    "unrealizedPnlPct": 14.61,
-    "holdingDays": 31
+    "marketValue": 2223.2,
+    "weightPct": 12.53,
+    "unrealizedPnl": 274.89,
+    "unrealizedPnlPct": 14.11,
+    "holdingDays": 32
   },
   {
     "symbol": "BBY",
     "name": "BBY",
     "quantity": 21.0,
-    "marketValue": 2063.25,
-    "weightPct": 11.37,
-    "unrealizedPnl": -32.14,
-    "unrealizedPnlPct": -1.53,
-    "holdingDays": 3
+    "marketValue": 2012.85,
+    "weightPct": 11.34,
+    "unrealizedPnl": -82.54,
+    "unrealizedPnlPct": -3.94,
+    "holdingDays": 4
   },
   {
     "symbol": "CRL",
     "name": "CRL",
     "quantity": 6.0,
-    "marketValue": 2269.08,
-    "weightPct": 12.5,
-    "unrealizedPnl": 173.38,
-    "unrealizedPnlPct": 8.27,
-    "holdingDays": 3
+    "marketValue": 2222.1,
+    "weightPct": 12.52,
+    "unrealizedPnl": 126.4,
+    "unrealizedPnlPct": 6.03,
+    "holdingDays": 4
   },
   {
     "symbol": "NOW",
     "name": "NOW",
     "quantity": 13.0,
-    "marketValue": 1503.06,
-    "weightPct": 8.28,
-    "unrealizedPnl": -537.42,
-    "unrealizedPnlPct": -26.34,
-    "holdingDays": 3
+    "marketValue": 1405.17,
+    "weightPct": 7.92,
+    "unrealizedPnl": -635.31,
+    "unrealizedPnlPct": -31.14,
+    "holdingDays": 4
   }
 ]

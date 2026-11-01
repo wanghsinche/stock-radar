@@ -277,8 +277,8 @@ def main():
 
     # 7. Determine buy/sell/hold lists
     if spy_mode:
-        sell_list = sorted(held_symbols)
-        buy_list = []
+        sell_list = sorted(held_symbols - {"SPY"})
+        buy_list = ["SPY"] if spy_price is not None and pd.notna(spy_price) else []
         hold_list = []
         strategy_name = "spy"
     else:
@@ -334,7 +334,7 @@ def main():
                        "close": round(q["close"], 2), "high_date": str(q["high_date"].date())}
                       for q in qualifiers],
         "top20": [q["symbol"] for q in top20],
-        "buy_list": buy_list[:can_buy_n],
+        "buy_list": buy_list if spy_mode else buy_list[:can_buy_n],
         "sell_list": sell_list,
         "hold_list": hold_list,
         "cash_available": round(cash_available, 2),
@@ -344,6 +344,8 @@ def main():
         "peak_value": round(peak_value, 2),
         "drawdown_pct": round(dd_from_peak * 100, 2),
         "spy_mode": spy_mode,
+        "spy_price": round(float(spy_price), 4) if spy_price is not None and pd.notna(spy_price) else None,
+        "weeks_since_stock_entry": weeks_since_stock_entry,
         "risk_alert": risk_alert,
     }
 

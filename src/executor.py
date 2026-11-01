@@ -148,10 +148,21 @@ def has_orders_on_date(trade_client, account_id: str, target_date: str) -> bool:
 
 
 def _price_from_strategy(strategy: dict, symbol: str) -> float:
+    if symbol == "SPY":
+        return float(strategy.get("spy_price") or 0)
     for q in strategy.get("qualified", []):
         if q["symbol"] == symbol:
             return q.get("close", 0)
     return 0
+
+
+def _qty_to_buy(strategy: dict, symbol: str, price: float, buying_power: float | None = None) -> int:
+    if price <= 0:
+        return 0
+    if strategy.get("mode") == "spy" and symbol == "SPY":
+        cash = buying_power if buying_power is not None else strategy.get("cash_available", 0)
+        return int(float(cash) / (price * 1.05))
+    return int(strategy.get("position_budget", 2000) / price)
 
 
 def _tg_push(msg: str):
@@ -238,8 +249,8 @@ def main():
     strategy_hold = set(strategy["hold_list"])
 
     if strategy["mode"] == "spy":
-        actual_sell = list(webull_held)
-        actual_buy = ["SPY"] if "SPY" not in webull_held else []
+        actual_sell = sorted(webull_held - {"SPY"})
+        actual_buy = ["SPY"]
     elif strategy["mode"] == "rebalance":
         actual_sell = sorted(strategy_sell & webull_held)
         actual_buy = list(strategy["buy_list"])
@@ -289,16 +300,15 @@ def main():
         effective_bp = usd_bp + estimated_sell_proceeds
         print(f"    💵 USD 购买力: ${usd_bp:,.2f} + 卖出预估 ${estimated_sell_proceeds:,.2f} = ${effective_bp:,.2f}")
 
-        position_budget = strategy.get("position_budget", 2000)
         for symbol in actual_buy:
             price = _price_from_strategy(strategy, symbol)
-            if price <= 0:
+            if price <= 0 and symbol != "SPY":
                 price = 200
-            qty = int(position_budget / price)
+            qty = _qty_to_buy(strategy, symbol, price, effective_bp if symbol == "SPY" else None)
             if qty == 0:
-                print(f"    ⚠️ 跳过 {symbol}: ${price:.0f} > ${position_budget}, 买不起1股")
+                print(f"    ⚠️ 跳过 {symbol}: ${price:.0f} 资金不足，买不起1股")
                 results["failed"].append({"symbol": symbol, "action": "BUY",
-                                          "error": "Price exceeds per-stock budget"})
+                                           "error": "Price exceeds per-stock budget"})
                 continue
             estimated = qty * price * 1.05  # 5% buffer for market order slippage
             if estimated > effective_bp:
@@ -332,13 +342,12 @@ def main():
         if s not in actual_sell:
             new_positions[s] = webull_positions[s]
 
-    position_budget = strategy.get("position_budget", 2000)
     actual_buy_cost = 0
     for s in actual_buy:
         price = _price_from_strategy(strategy, s)
-        if price <= 0:
+        if price <= 0 and s != "SPY":
             price = 200
-        qty = int(position_budget / price)
+        qty = _qty_to_buy(strategy, s, price)
         if qty == 0:
             continue
         new_positions[s] = qty
@@ -375,11 +384,11 @@ def main():
     pos_state["position_budget"] = strategy.get("position_budget", 2000)
     pos_state["budget_year"] = strategy.get("budget_year")
     pos_state["peak_value"] = strategy.get("peak_value", 20000)
-    pos_state["weeks_since_stock_entry"] = 0 if not strategy.get("spy_mode") else 999
-    if not strategy.get("spy_mode"):
+    if "weeks_since_stock_entry" in strategy:
+        pos_state["weeks_since_stock_entry"] = strategy["weeks_since_stock_entry"]
+    else:
         old_weeks = pos_state.get("weeks_since_stock_entry", 0)
-        if old_weeks < 999:
-            pos_state["weeks_since_stock_entry"] = old_weeks + 1
+        pos_state["weeks_since_stock_entry"] = 999 if strategy.get("spy_mode") else min(old_weeks + 1, 999)
     save_positions(pos_state)
 
     # 7. TG push

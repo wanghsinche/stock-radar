@@ -279,7 +279,15 @@ def main():
                 print(f"    ✗ 卖出 {symbol} 失败: {resp}")
 
         usd_bp = get_usd_buying_power(trade_client, account_id)
-        print(f"    💵 USD 购买力: ${usd_bp:,.2f}")
+        # 预估卖出释放的资金（市场单尚未成交，资金未到账）
+        estimated_sell_proceeds = 0
+        for s in actual_sell:
+            price = _price_from_strategy(strategy, s)
+            if price > 0:
+                qty = int(webull_positions.get(s, 0))
+                estimated_sell_proceeds += qty * price
+        effective_bp = usd_bp + estimated_sell_proceeds
+        print(f"    💵 USD 购买力: ${usd_bp:,.2f} + 卖出预估 ${estimated_sell_proceeds:,.2f} = ${effective_bp:,.2f}")
 
         position_budget = strategy.get("position_budget", 2000)
         for symbol in actual_buy:
@@ -293,8 +301,8 @@ def main():
                                           "error": "Price exceeds per-stock budget"})
                 continue
             estimated = qty * price * 1.05  # 5% buffer for market order slippage
-            if estimated > usd_bp:
-                print(f"    ⚠️ 跳过 {symbol}: 预计 ${estimated:.0f} > 购买力 ${usd_bp:.0f}")
+            if estimated > effective_bp:
+                print(f"    ⚠️ 跳过 {symbol}: 预计 ${estimated:.0f} > 购买力 ${effective_bp:.0f}")
                 results["failed"].append({"symbol": symbol, "action": "BUY",
                                           "error": "Insufficient BP"})
                 continue
@@ -315,8 +323,8 @@ def main():
     #     (e.g. TRGP) have filled, corrupting next week's valuation.
     if not paper:
         from src.holiday import sleep_until_et
-        print(f"\n  ⏳ 等待买单成交，09:40 ET 再同步真实持仓/现金 ...")
-        sleep_until_et(9, 40, max_wait=900)
+        print(f"\n  ⏳ 等待买单成交，09:42 ET 再同步真实持仓/现金 ...")
+        sleep_until_et(9, 42, max_wait=900)
 
     # 6. Save positions state for next strategy run
     new_positions = {}

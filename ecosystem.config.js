@@ -25,7 +25,7 @@ module.exports = {
       interpreter: 'none',
       instances: 1,
       autorestart: false,
-      cron_restart: '30 13 * * 1-5',  // Mon-Fri 13:30 UTC; 假日/已完成自动跳过
+      cron_restart: '32 13 * * 1-5',  // Mon-Fri 13:32 UTC = 09:32 ET; 开盘后2分钟下单避免大跳动
       watch: false,
       max_memory_restart: '512M',
       log_file: '/root/work/plusefin-landing-page/stock-radar/logs/trade.log',
@@ -76,7 +76,7 @@ module.exports = {
       interpreter: 'none',
       instances: 1,
       autorestart: false,
-      cron_restart: '50 13 * * 1-5',  // Mon-Fri 13:50 UTC, after exec-trade
+      cron_restart: '52 13 * * 1-5',  // Mon-Fri 13:52 UTC, after exec-trade (09:32+10min sync+buffer)
       watch: false,
       max_memory_restart: '512M',
       log_file: '/root/work/plusefin-landing-page/stock-radar/logs/site-live.log',

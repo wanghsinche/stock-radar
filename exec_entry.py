@@ -1,7 +1,7 @@
 """
 pm2 wrapper — 自适应 DST + 假日检查 + 单实例锁
-ecosystem 设 Mon-Fri 13:30 UTC
-- 如果还没到 09:30 ET → sleep
+ecosystem 设 Mon-Fri 13:32 UTC
+- 如果还没到 09:32 ET → sleep（开盘后2分钟再下单，避免大跳动）
 - 如果是假日 → 跳过 + TG 通知
 - 如果本周策略已执行 → 跳过
 - 单实例锁防止 pm2 cron 重复触发导致重复下单
@@ -66,12 +66,12 @@ def main():
             print(f"  ⏭️ Strategy {exec_date} already executed, skipping")
             return
 
-    # Wait until open (09:30 ET)
-    if not sleep_until_et(9, 30, max_wait=3600):
+    # Wait until 09:32 ET (开盘后2分钟，避免大跳动)
+    if not sleep_until_et(9, 32, max_wait=3600):
         print(f"  ⏭️ Too far from US open, cron will retry next week")
         return
 
-    # Execute (places orders at open, then sleeps until 09:40 ET inside to
+    # Execute (places orders at 09:32 ET, then sleeps until 09:42 ET inside to
     # let market orders fill before syncing real positions)
     from src.executor import main as executor_main
     executor_main()

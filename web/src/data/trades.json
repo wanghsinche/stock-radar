@@ -1,5 +1,115 @@
 [
   {
+    "date": "2026-11-02",
+    "action": "BUY",
+    "symbol": "SPY",
+    "quantity": 27.0,
+    "price": 759.51,
+    "amount": 20506.77,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-11-02",
+    "action": "SELL",
+    "symbol": "ZBRA",
+    "quantity": 5.0,
+    "price": 366.11,
+    "amount": 1830.55,
+    "realizedPnl": -31.7,
+    "realizedPnlPct": -1.7,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-11-02",
+    "action": "SELL",
+    "symbol": "WDAY",
+    "quantity": 11.0,
+    "price": 198.52,
+    "amount": 2183.69,
+    "realizedPnl": 75.13,
+    "realizedPnlPct": 3.56,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-11-02",
+    "action": "SELL",
+    "symbol": "VEEV",
+    "quantity": 6.0,
+    "price": 311.57,
+    "amount": 1869.45,
+    "realizedPnl": -25.68,
+    "realizedPnlPct": -1.36,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-11-02",
+    "action": "SELL",
+    "symbol": "RVTY",
+    "quantity": 13.0,
+    "price": 157.07,
+    "amount": 2041.91,
+    "realizedPnl": -50.18,
+    "realizedPnlPct": -2.4,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-11-02",
+    "action": "SELL",
+    "symbol": "NOW",
+    "quantity": 13.0,
+    "price": 105.51,
+    "amount": 1371.63,
+    "realizedPnl": -668.85,
+    "realizedPnlPct": -32.78,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-11-02",
+    "action": "SELL",
+    "symbol": "MRNA",
+    "quantity": 10.0,
+    "price": 228.28,
+    "amount": 2282.8,
+    "realizedPnl": 334.5,
+    "realizedPnlPct": 17.17,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-11-02",
+    "action": "SELL",
+    "symbol": "IQV",
+    "quantity": 7.0,
+    "price": 268.31,
+    "amount": 1878.17,
+    "realizedPnl": -90.79,
+    "realizedPnlPct": -4.61,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-11-02",
+    "action": "SELL",
+    "symbol": "CRL",
+    "quantity": 6.0,
+    "price": 360.58,
+    "amount": 2163.48,
+    "realizedPnl": 67.8,
+    "realizedPnlPct": 3.24,
+    "note": "模型交易"
+  },
+  {
+    "date": "2026-11-02",
+    "action": "SELL",
+    "symbol": "BBY",
+    "quantity": 21.0,
+    "price": 97.19,
+    "amount": 2041.09,
+    "realizedPnl": -54.39,
+    "realizedPnlPct": -2.6,
+    "note": "模型交易"
+  },
+  {
     "date": "2026-10-26",
     "action": "BUY",
     "symbol": "NOW",

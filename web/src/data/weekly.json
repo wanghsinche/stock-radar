@@ -6,11 +6,11 @@
     "phase": "已执行",
     "publishedAt": "2026-10-31",
     "executedAt": "2026-11-02",
-    "netValue": 19133.77,
-    "weeklyReturnPct": -0.69,
-    "cumulativeReturnPct": -16.09,
-    "spyReturnPct": 0.84,
-    "qqqReturnPct": -3.89,
+    "netValue": 19377.79,
+    "weeklyReturnPct": 0.58,
+    "cumulativeReturnPct": -15.02,
+    "spyReturnPct": 1.14,
+    "qqqReturnPct": -3.3,
     "buys": [
       "SPY"
     ],
@@ -464,36 +464,6 @@
       "ERIE",
       "GPC",
       "UAL"
-    ],
-    "holds": [],
-    "proofUrl": ""
-  },
-  {
-    "slug": "2026-07-06",
-    "date": "2026-07-06",
-    "title": "2026-07-06：交易执行记录",
-    "phase": "已执行",
-    "publishedAt": "2026-07-04",
-    "executedAt": "2026-07-06",
-    "netValue": null,
-    "weeklyReturnPct": null,
-    "cumulativeReturnPct": null,
-    "spyReturnPct": null,
-    "qqqReturnPct": null,
-    "buys": [
-      "AJG",
-      "BRO",
-      "CRL",
-      "DASH",
-      "ERIE",
-      "GPC",
-      "HOOD",
-      "MRNA",
-      "TECH",
-      "UAL"
-    ],
-    "sells": [
-      "IAU"
     ],
     "holds": [],
     "proofUrl": ""

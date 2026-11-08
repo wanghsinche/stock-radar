@@ -1,32 +1,17 @@
 {
   "active": true,
   "status": "策略公布",
-  "generatedAt": "2026-11-01",
-  "signalDate": "2026-10-30",
-  "executionDate": "2026-11-02",
-  "mode": "进攻中",
-  "nQualified": 241,
-  "portfolioValue": 19140.89,
+  "generatedAt": "2026-11-08",
+  "signalDate": "2026-11-06",
+  "executionDate": "2026-11-09",
+  "mode": "防守中",
+  "nQualified": 319,
+  "portfolioValue": 21470.81,
   "buyList": [
-    "A",
-    "MTD",
-    "TMO",
-    "TECH",
-    "CDW",
-    "DLTR"
+    "SPY"
   ],
   "sellList": [
-    "IQV",
-    "MRNA",
-    "NOW",
-    "NVDA",
-    "VEEV",
-    "WDAY",
-    "ZBRA"
+    "NVDA"
   ],
-  "holdList": [
-    "CRL",
-    "BBY",
-    "RVTY"
-  ]
+  "holdList": []
 }

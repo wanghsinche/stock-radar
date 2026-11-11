@@ -3,9 +3,9 @@
     "symbol": "NVDA",
     "name": "NVDA",
     "quantity": 0.0917,
-    "marketValue": 16.1,
+    "marketValue": 16.01,
     "weightPct": 0.08,
-    "unrealizedPnl": 16.1,
+    "unrealizedPnl": 16.0,
     "unrealizedPnlPct": 0,
     "holdingDays": 0
   },
@@ -13,10 +13,10 @@
     "symbol": "SPY",
     "name": "SPY",
     "quantity": 27.0,
-    "marketValue": 20198.97,
+    "marketValue": 20441.16,
     "weightPct": 99.92,
-    "unrealizedPnl": -307.8,
-    "unrealizedPnlPct": -1.5,
-    "holdingDays": 8
+    "unrealizedPnl": -65.61,
+    "unrealizedPnlPct": -0.32,
+    "holdingDays": 9
   }
 ]

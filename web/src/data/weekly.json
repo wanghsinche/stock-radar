@@ -6,11 +6,11 @@
     "phase": "已执行",
     "publishedAt": "2026-10-31",
     "executedAt": "2026-11-02",
-    "netValue": 19222.8,
-    "weeklyReturnPct": -0.23,
-    "cumulativeReturnPct": -15.7,
-    "spyReturnPct": 0.54,
-    "qqqReturnPct": -4.79,
+    "netValue": 19150.16,
+    "weeklyReturnPct": -0.6,
+    "cumulativeReturnPct": -16.02,
+    "spyReturnPct": 1.87,
+    "qqqReturnPct": -2.58,
     "buys": [
       "SPY"
     ],

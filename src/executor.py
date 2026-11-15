@@ -81,6 +81,34 @@ def get_usd_buying_power(trade_client, account_id: str) -> float:
         return 0
 
 
+def _as_float(value, default=None):
+    try:
+        if isinstance(value, dict):
+            value = value.get("value") or value.get("amount")
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def get_usd_cash_balance(trade_client, account_id: str) -> float | None:
+    """Return real USD cash balance, not buying power.
+
+    Buying power may include margin and should only be used for order preflight.
+    Portfolio valuation must use cash_balance, which can be negative.
+    """
+    try:
+        res = trade_client.account_v2.get_account_balance(account_id)
+        if res.status_code != 200:
+            return None
+        data = res.json()
+        for asset in data.get("account_currency_assets", []):
+            if asset.get("currency") == "USD":
+                return _as_float(asset.get("cash_balance") or asset.get("cashBalance"), None)
+        return None
+    except Exception:
+        return None
+
+
 def get_positions(trade_client, account_id: str) -> dict:
     res = trade_client.account_v2.get_account_position(account_id)
     if res.status_code != 200:
@@ -366,10 +394,10 @@ def main():
                 # Fallback: use estimated positions
                 print(f"  ⚠️ Webull 返回空持仓，使用估算持仓")
                 pos_state["positions"] = new_positions
-            live_bp = get_usd_buying_power(trade_client, account_id)
-            if live_bp > 0:
-                pos_state["cash"] = live_bp
-                print(f"  ✓ 已同步 Webull 真实现金: ${live_bp:,.2f}")
+            live_cash = get_usd_cash_balance(trade_client, account_id)
+            if live_cash is not None:
+                pos_state["cash"] = live_cash
+                print(f"  ✓ 已同步 Webull 真实现金余额: ${live_cash:,.2f}")
         else:
             pos_state["positions"] = new_positions
             pos_state["cash"] = strategy.get("cash_available", 0) - actual_buy_cost

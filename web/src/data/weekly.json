@@ -6,11 +6,11 @@
     "phase": "已执行",
     "publishedAt": "2026-10-31",
     "executedAt": "2026-11-02",
-    "netValue": 18729.02,
-    "weeklyReturnPct": -2.79,
-    "cumulativeReturnPct": -17.87,
-    "spyReturnPct": -0.79,
-    "qqqReturnPct": -6.62,
+    "netValue": 18626.67,
+    "weeklyReturnPct": -3.32,
+    "cumulativeReturnPct": -18.32,
+    "spyReturnPct": -1.8,
+    "qqqReturnPct": -7.3,
     "buys": [
       "SPY"
     ],
@@ -400,42 +400,6 @@
       "PYPL",
       "TECH",
       "VEEV"
-    ],
-    "holds": [],
-    "proofUrl": ""
-  },
-  {
-    "slug": "2026-07-20",
-    "date": "2026-07-20",
-    "title": "2026-07-20：交易执行记录",
-    "phase": "已执行",
-    "publishedAt": "2026-07-18",
-    "executedAt": "2026-07-20",
-    "netValue": 21436.35,
-    "weeklyReturnPct": null,
-    "cumulativeReturnPct": -5.99,
-    "spyReturnPct": -1.27,
-    "qqqReturnPct": -2.46,
-    "buys": [
-      "ADBE",
-      "GDDY",
-      "JKHY",
-      "MPC",
-      "PSX",
-      "PYPL",
-      "VEEV",
-      "VLO"
-    ],
-    "sells": [
-      "ADBE",
-      "ANET",
-      "AXON",
-      "CRL",
-      "DASH",
-      "EXPE",
-      "HOOD",
-      "MRNA",
-      "ZBRA"
     ],
     "holds": [],
     "proofUrl": ""

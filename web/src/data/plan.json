@@ -1,12 +1,12 @@
 {
   "active": true,
   "status": "策略公布",
-  "generatedAt": "2026-11-15",
-  "signalDate": "2026-11-13",
-  "executionDate": "2026-11-16",
+  "generatedAt": "2026-11-22",
+  "signalDate": "2026-11-20",
+  "executionDate": "2026-11-23",
   "mode": "防守中",
-  "nQualified": 152,
-  "portfolioValue": 19148.56,
+  "nQualified": 65,
+  "portfolioValue": 17402.02,
   "buyList": [
     "SPY"
   ],

@@ -6,11 +6,11 @@
     "phase": "已执行",
     "publishedAt": "2026-10-31",
     "executedAt": "2026-11-02",
-    "netValue": 18051.56,
-    "weeklyReturnPct": -6.31,
-    "cumulativeReturnPct": -20.84,
-    "spyReturnPct": -3.16,
-    "qqqReturnPct": -8.14,
+    "netValue": 17782.94,
+    "weeklyReturnPct": -7.7,
+    "cumulativeReturnPct": -22.02,
+    "spyReturnPct": -3.63,
+    "qqqReturnPct": -9.96,
     "buys": [
       "SPY"
     ],
@@ -366,40 +366,6 @@
       "UNH",
       "URI",
       "VLO"
-    ],
-    "holds": [],
-    "proofUrl": ""
-  },
-  {
-    "slug": "2026-07-27",
-    "date": "2026-07-27",
-    "title": "2026-07-27：交易执行记录",
-    "phase": "已执行",
-    "publishedAt": "2026-07-25",
-    "executedAt": "2026-07-27",
-    "netValue": 21609.44,
-    "weeklyReturnPct": 0.81,
-    "cumulativeReturnPct": -5.24,
-    "spyReturnPct": -0.09,
-    "qqqReturnPct": -3.02,
-    "buys": [
-      "CASY",
-      "CSX",
-      "CVS",
-      "DVA",
-      "TRGP",
-      "UNH",
-      "URI"
-    ],
-    "sells": [
-      "ADBE",
-      "AJG",
-      "GDDY",
-      "JKHY",
-      "PANW",
-      "PYPL",
-      "TECH",
-      "VEEV"
     ],
     "holds": [],
     "proofUrl": ""

@@ -1117,8 +1117,8 @@
     "quantity": 9.0,
     "price": 181.63,
     "amount": 1634.67,
-    "realizedPnl": -475.92,
-    "realizedPnlPct": -22.55,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
     "note": "模型交易"
   },
   {
@@ -1282,8 +1282,8 @@
     "quantity": 1.0,
     "price": 1080.17,
     "amount": 1080.17,
-    "realizedPnl": -53.41,
-    "realizedPnlPct": -4.71,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
     "note": "模型交易"
   },
   {
@@ -1293,8 +1293,8 @@
     "quantity": 5.0,
     "price": 416.99,
     "amount": 2084.95,
-    "realizedPnl": -11.4,
-    "realizedPnlPct": -0.54,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
     "note": "模型交易"
   },
   {
@@ -1304,8 +1304,8 @@
     "quantity": 7.0,
     "price": 263.78,
     "amount": 1846.46,
-    "realizedPnl": -88.2,
-    "realizedPnlPct": -4.56,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
     "note": "模型交易"
   },
   {
@@ -1337,8 +1337,8 @@
     "quantity": 19.0,
     "price": 105.0,
     "amount": 1995.03,
-    "realizedPnl": -32.68,
-    "realizedPnlPct": -1.61,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
     "note": "模型交易"
   },
   {
@@ -1348,8 +1348,8 @@
     "quantity": 40.0,
     "price": 50.54,
     "amount": 2021.6,
-    "realizedPnl": -83.2,
-    "realizedPnlPct": -3.95,
+    "realizedPnl": null,
+    "realizedPnlPct": null,
     "note": "模型交易"
   },
   {
@@ -1359,171 +1359,6 @@
     "quantity": 2.0,
     "price": 865.0,
     "amount": 1730.0,
-    "realizedPnl": 33.08,
-    "realizedPnlPct": 1.95,
-    "note": "模型交易"
-  },
-  {
-    "date": "2026-07-27",
-    "action": "BUY",
-    "symbol": "TRGP",
-    "quantity": 7.0,
-    "price": 276.38,
-    "amount": 1934.63,
-    "realizedPnl": null,
-    "realizedPnlPct": null,
-    "note": "模型交易"
-  },
-  {
-    "date": "2026-07-27",
-    "action": "BUY",
-    "symbol": "CSX",
-    "quantity": 40.0,
-    "price": 52.62,
-    "amount": 2104.8,
-    "realizedPnl": null,
-    "realizedPnlPct": null,
-    "note": "模型交易"
-  },
-  {
-    "date": "2026-07-27",
-    "action": "BUY",
-    "symbol": "CASY",
-    "quantity": 2.0,
-    "price": 848.46,
-    "amount": 1696.92,
-    "realizedPnl": null,
-    "realizedPnlPct": null,
-    "note": "模型交易"
-  },
-  {
-    "date": "2026-07-27",
-    "action": "BUY",
-    "symbol": "URI",
-    "quantity": 1.0,
-    "price": 1133.58,
-    "amount": 1133.58,
-    "realizedPnl": null,
-    "realizedPnlPct": null,
-    "note": "模型交易"
-  },
-  {
-    "date": "2026-07-27",
-    "action": "BUY",
-    "symbol": "CVS",
-    "quantity": 19.0,
-    "price": 106.72,
-    "amount": 2027.68,
-    "realizedPnl": null,
-    "realizedPnlPct": null,
-    "note": "模型交易"
-  },
-  {
-    "date": "2026-07-27",
-    "action": "BUY",
-    "symbol": "UNH",
-    "quantity": 5.0,
-    "price": 419.27,
-    "amount": 2096.33,
-    "realizedPnl": null,
-    "realizedPnlPct": null,
-    "note": "模型交易"
-  },
-  {
-    "date": "2026-07-27",
-    "action": "BUY",
-    "symbol": "DVA",
-    "quantity": 9.0,
-    "price": 234.51,
-    "amount": 2110.56,
-    "realizedPnl": null,
-    "realizedPnlPct": null,
-    "note": "模型交易"
-  },
-  {
-    "date": "2026-07-27",
-    "action": "SELL",
-    "symbol": "VEEV",
-    "quantity": 10.0,
-    "price": 190.16,
-    "amount": 1901.6,
-    "realizedPnl": null,
-    "realizedPnlPct": null,
-    "note": "模型交易"
-  },
-  {
-    "date": "2026-07-27",
-    "action": "SELL",
-    "symbol": "TECH",
-    "quantity": 28.0,
-    "price": 71.63,
-    "amount": 2005.64,
-    "realizedPnl": null,
-    "realizedPnlPct": null,
-    "note": "模型交易"
-  },
-  {
-    "date": "2026-07-27",
-    "action": "SELL",
-    "symbol": "PYPL",
-    "quantity": 35.0,
-    "price": 55.7,
-    "amount": 1949.5,
-    "realizedPnl": null,
-    "realizedPnlPct": null,
-    "note": "模型交易"
-  },
-  {
-    "date": "2026-07-27",
-    "action": "SELL",
-    "symbol": "PANW",
-    "quantity": 6.0,
-    "price": 325.39,
-    "amount": 1952.37,
-    "realizedPnl": null,
-    "realizedPnlPct": null,
-    "note": "模型交易"
-  },
-  {
-    "date": "2026-07-27",
-    "action": "SELL",
-    "symbol": "JKHY",
-    "quantity": 13.0,
-    "price": 151.35,
-    "amount": 1967.61,
-    "realizedPnl": null,
-    "realizedPnlPct": null,
-    "note": "模型交易"
-  },
-  {
-    "date": "2026-07-27",
-    "action": "SELL",
-    "symbol": "GDDY",
-    "quantity": 21.0,
-    "price": 93.76,
-    "amount": 1968.96,
-    "realizedPnl": null,
-    "realizedPnlPct": null,
-    "note": "模型交易"
-  },
-  {
-    "date": "2026-07-27",
-    "action": "SELL",
-    "symbol": "AJG",
-    "quantity": 7.0,
-    "price": 248.87,
-    "amount": 1742.09,
-    "realizedPnl": null,
-    "realizedPnlPct": null,
-    "note": "模型交易"
-  },
-  {
-    "date": "2026-07-27",
-    "action": "SELL",
-    "symbol": "ADBE",
-    "quantity": 8.0,
-    "price": 231.04,
-    "amount": 1848.36,
     "realizedPnl": null,
     "realizedPnlPct": null,
     "note": "模型交易"
